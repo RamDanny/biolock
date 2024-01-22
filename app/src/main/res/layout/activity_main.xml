@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,27 +9,49 @@
         android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="89dp"
-        android:text="Start Recording"
-        app:layout_constraintStart_toStartOf="@+id/accelerometerData"
-        app:layout_constraintTop_toBottomOf="@+id/accelerometerData" />
+        android:text="Start Logging"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:onClick="startLogging"/>
+
+    <TextView
+        android:id="@+id/accelerometerValues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Accelerometer Values: "
+        android:textSize="18sp"
+        android:layout_below="@id/startButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/gyroscopeValues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Gyroscope Values: "
+        android:textSize="18sp"
+        android:layout_below="@id/accelerometerValues"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/swipeInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Swipe Info: "
+        android:textSize="18sp"
+        android:layout_below="@id/gyroscopeValues"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
 
     <Button
         android:id="@+id/stopButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
-        android:text="Stop Recording"
-        app:layout_constraintStart_toStartOf="@+id/startButton"
-        app:layout_constraintTop_toBottomOf="@+id/startButton" />
+        android:text="Stop Logging"
+        android:layout_below="@id/swipeInfo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:onClick="stopLogging"/>
 
-    <TextView
-        android:id="@+id/accelerometerData"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="189dp"
-        android:text="Accelerometer Data: "
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

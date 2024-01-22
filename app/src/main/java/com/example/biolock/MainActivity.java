@@ -1,136 +1,174 @@
 package com.example.biolock;
 
-import android.annotation.SuppressLint;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends Activity implements SensorEventListener, View.OnTouchListener {
 
     private SensorManager sensorManager;
-    private TextView accelerometerData;
-    private Button startButton, stopButton;
-    private boolean isRecording = false;
-    private File file;
-    private FileWriter fileWriter;
+    private Sensor accelerometer;
+    private Sensor gyroscope;
+    private TextView accelerometerValues;
+    private TextView gyroscopeValues;
+    private TextView swipeInfo;
+    private Button startButton;
+    public static boolean accmeter = false;
+    public static boolean gyrmeter = false;
+    public static boolean touched = false;
+    private float xTouchStart;
+    private float yTouchStart;
+    private float xTouchEnd;
+    private float yTouchEnd;
 
-    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        accelerometerData = findViewById(R.id.accelerometerData);
-        startButton = findViewById(R.id.startButton);
-        stopButton = findViewById(R.id.stopButton);
+        accelerometerValues = findViewById(R.id.accelerometerValues);
+        gyroscopeValues = findViewById(R.id.gyroscopeValues);
+        swipeInfo = findViewById(R.id.swipeInfo);
+        //startButton = findViewById(R.id.startButton);
+        //startButton.setOnTouchListener(this);
 
+        // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        }
 
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startRecording();
-            }
-        });
+        findViewById(android.R.id.content).setOnTouchListener(this);
 
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopRecording();
-            }
-        });
+        // Check if the sensors are available
+        if (accelerometer == null) {
+            accelerometerValues.setText("Accelerometer not available on this device.");
+        }
 
-        // Check if the accelerometer sensor is available
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-            Sensor accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        } else {
-            accelerometerData.setText("Accelerometer not available on this device.");
+        if (gyroscope == null) {
+            gyroscopeValues.setText("Gyroscope not available on this device.");
         }
     }
 
-    private void startRecording() {
-        isRecording = true;
-        startButton.setEnabled(false);
-        stopButton.setEnabled(true);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Register the sensor listeners when the activity is resumed
+        if (accelerometer != null) {
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
-        // Create a file to store accelerometer data
-        File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        file = new File(root, "accelerometer_data.txt");
-
-        try {
-            fileWriter = new FileWriter(file);
-            fileWriter.append("Timestamp,X,Y,Z\n"); // Header
-        } catch (IOException e) {
-            Log.e("MainActivity", "Error opening file for writing", e);
+        if (gyroscope != null) {
+            sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
-    private void stopRecording() {
-        isRecording = false;
-        startButton.setEnabled(true);
-        stopButton.setEnabled(false);
-
-        // Close the FileWriter
-        try {
-            if (fileWriter != null) {
-                fileWriter.close();
-            }
-        } catch (IOException e) {
-            Log.e("MainActivity", "Error closing file", e);
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Unregister the sensor listeners when the activity is paused
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
         }
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (isRecording && event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float timestamp = event.timestamp;
+        // When sensors detect change update the display
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && accmeter) {
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
 
-            // Append accelerometer data to the file
-            try {
-                if (fileWriter != null) {
-                    fileWriter.append(timestamp + "," + x + "," + y + "," + z + "\n");
-                }
-            } catch (IOException e) {
-                Log.e("MainActivity", "Error writing to file", e);
-            }
+            String valuesText = "Accelerometer Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
+            accelerometerValues.setText(valuesText);
+        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
 
-            // Display accelerometer data in TextView
-            String data = "X: " + x + "\nY: " + y + "\nZ: " + z;
-            accelerometerData.setText("Accelerometer Data: \n" + data);
+            String valuesText = "Gyroscope Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
+            gyroscopeValues.setText(valuesText);
         }
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        // Unregister the sensor listener to save battery
-        sensorManager.unregisterListener(this);
-        stopRecording(); // Stop recording if the app goes to the background
+    public boolean onTouch(View v, MotionEvent event) {
+        // Handle touch events
+        if (event.getAction() == MotionEvent.ACTION_DOWN && touched) {
+            xTouchStart = event.getX();
+            yTouchStart = event.getY();
+            System.out.println(String.valueOf(xTouchStart) + " " + yTouchStart);
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP && touched) {
+            xTouchEnd = event.getX();
+            yTouchEnd = event.getY();
+            detectSwipeDirection(xTouchStart, yTouchStart, xTouchEnd, yTouchEnd);
+        }
+        return true;
     }
 
+    private void detectSwipeDirection(float xStart, float yStart, float xEnd, float yEnd) {
+        float deltaX = xEnd - xStart;
+        float deltaY = yEnd - yStart;
+        float minSwipeDistance = 50;
 
+        String direction = "";
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Horizontal swipe
+            if (Math.abs(deltaX) > minSwipeDistance) {
+                direction = (deltaX > 0) ? "Right" : "Left";
+            }
+        } else {
+            // Vertical swipe
+            if (Math.abs(deltaY) > minSwipeDistance) {
+                direction = (deltaY > 0) ? "Down" : "Up";
+            }
+        }
+
+        // Display detailed swipe information
+        String swipeInfoText = "Swipe Info: \nDirection: " + direction +
+                "\nStart X: " + xStart + "\nStart Y: " + yStart +
+                "\nEnd X: " + xEnd + "\nEnd Y: " + yEnd;
+        swipeInfo.setText(swipeInfoText);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void startLogging(View view) {
+        // Called when the "Start Logging" button is pressed
+        accmeter = true;
+        gyrmeter = true;
+        touched = true;
+
+        System.out.println("Logging started!");
+    }
+
+    public void stopLogging(View view) {
+        // Called when the "Stop Logging" button is pressed
+        accmeter = false;
+        gyrmeter = false;
+        touched = false;
+
+        System.out.println("Logging stopped!");
+    }
 }
