@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnTouchListener {
 
@@ -31,6 +34,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private float yTouchStart;
     private float xTouchEnd;
     private float yTouchEnd;
+    public ArrayList accvals;
+    public ArrayList gyrovals;
+    public ArrayList swipevals;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +46,20 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         accelerometerValues = findViewById(R.id.accelerometerValues);
         gyroscopeValues = findViewById(R.id.gyroscopeValues);
         swipeInfo = findViewById(R.id.swipeInfo);
-        //startButton = findViewById(R.id.startButton);
-        //startButton.setOnTouchListener(this);
+        accvals = new ArrayList(3);
+        accvals.add(0.0);
+        accvals.add(0.0);
+        accvals.add(0.0);
+        gyrovals = new ArrayList(3);
+        gyrovals.add(0.0);
+        gyrovals.add(0.0);
+        gyrovals.add(0.0);
+        swipevals = new ArrayList(5);
+        swipevals.add("None");
+        swipevals.add(0.0);
+        swipevals.add(0.0);
+        swipevals.add(0.0);
+        swipevals.add(0.0);
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -92,13 +110,20 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             float y = event.values[1];
             float z = event.values[2];
 
+            accvals.set(0, x);
+            accvals.set(1, y);
+            accvals.set(2, z);
             String valuesText = "Accelerometer Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
             accelerometerValues.setText(valuesText);
-        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
 
+            gyrovals.set(0, x);
+            gyrovals.set(1, y);
+            gyrovals.set(2, z);
             String valuesText = "Gyroscope Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
             gyroscopeValues.setText(valuesText);
         }
@@ -143,6 +168,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             }
         }
 
+        // Insert into database
+        swipevals.set(0, direction);
+        swipevals.set(1, xStart);
+        swipevals.set(2, yStart);
+        swipevals.set(3, xEnd);
+        swipevals.set(4, yEnd);
+        DatabaseManager db = new DatabaseManager(getApplicationContext());
+        Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
+        Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
+        Boolean swipeInsert = db.insert_swipe((String) swipevals.get(0), String.valueOf(swipevals.get(1)), String.valueOf(swipevals.get(2)), String.valueOf(swipevals.get(3)), String.valueOf(swipevals.get(4)));
+
         // Display detailed swipe information
         String swipeInfoText = "Swipe Info: \nDirection: " + direction +
                 "\nStart X: " + xStart + "\nStart Y: " + yStart +
@@ -170,5 +206,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         touched = false;
 
         System.out.println("Logging stopped!");
+    }
+
+    public void viewDb(View view) {
+        Intent i = new Intent(MainActivity.this, ViewData.class);
+        startActivity(i);
     }
 }
