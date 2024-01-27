@@ -156,16 +156,25 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         float minSwipeDistance = 50;
 
         String direction = "";
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
             // Horizontal swipe
-            if (Math.abs(deltaX) > minSwipeDistance) {
+            if (Math.abs(deltaY) < minSwipeDistance && Math.abs(deltaX) > minSwipeDistance) {
                 direction = (deltaX > 0) ? "Right" : "Left";
             }
-        } else {
             // Vertical swipe
-            if (Math.abs(deltaY) > minSwipeDistance) {
+            else if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) > minSwipeDistance) {
                 direction = (deltaY > 0) ? "Down" : "Up";
             }
+            // Diagonal Swipe
+            else if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaY) > minSwipeDistance) {
+                if (deltaY < 0 && deltaX < 0) direction = "Up-Left";
+                else if (deltaY < 0 && deltaX > 0) direction = "Up-Right";
+                else if (deltaY > 0 && deltaX < 0) direction = "Down-Left";
+                else if (deltaY > 0 && deltaX > 0) direction = "Down-Right";
+            }
+        }
+        else {
+            direction = "Tap";
         }
 
         // Insert into database
