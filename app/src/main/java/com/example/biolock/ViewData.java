@@ -42,12 +42,13 @@ public class ViewData extends Activity {
         while (swipe.moveToNext()) {
             String temp = dataSwipe.getText().toString();
             String id = String.valueOf(swipe.getInt(0));
-            String direction = swipe.getString(1);
-            String sx = swipe.getString(2);
-            String sy = swipe.getString(3);
-            String ex = swipe.getString(4);
-            String ey = swipe.getString(5);
-            dataSwipe.setText(temp + direction + " " + sx + " " + sy + " " + ex + " " + ey+ "\n");
+            String startx = swipe.getString(1);
+            String starty = swipe.getString(2);
+            String endx = swipe.getString(3);
+            String endy = swipe.getString(4);
+            String letter = swipe.getString(5);
+            int gset = swipe.getInt(6);
+            dataSwipe.setText(temp + letter + " | " + gset + " | " + startx + " " + starty + "\n");
         }
         countDb.setText(String.valueOf(db.getRowCount()));
     }

@@ -1,7 +1,5 @@
 package com.example.biolock;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnTouchListener {
 
@@ -26,7 +25,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private TextView accelerometerValues;
     private TextView gyroscopeValues;
     private TextView swipeInfo;
-    private Button startButton;
+    private TextView userPrompt;
     public static boolean accmeter = false;
     public static boolean gyrmeter = false;
     public static boolean touched = false;
@@ -34,18 +33,23 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private float yTouchStart;
     private float xTouchEnd;
     private float yTouchEnd;
-    public ArrayList accvals;
-    public ArrayList gyrovals;
-    public ArrayList swipevals;
+    private ArrayList accvals;
+    private ArrayList gyrovals;
+    private ArrayList<float[]> lines;
+    private ArrayList<float[]> swipepath;
+    private String promptLetter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        accelerometerValues = findViewById(R.id.accelerometerValues);
+        /*accelerometerValues = findViewById(R.id.accelerometerValues);
         gyroscopeValues = findViewById(R.id.gyroscopeValues);
-        swipeInfo = findViewById(R.id.swipeInfo);
+        swipeInfo = findViewById(R.id.swipeInfo);*/
+        userPrompt = findViewById(R.id.userPrompt);
+
+        randPrompt();
         accvals = new ArrayList(3);
         accvals.add(0.0);
         accvals.add(0.0);
@@ -54,12 +58,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         gyrovals.add(0.0);
         gyrovals.add(0.0);
         gyrovals.add(0.0);
-        swipevals = new ArrayList(5);
-        swipevals.add("None");
-        swipevals.add(0.0);
-        swipevals.add(0.0);
-        swipevals.add(0.0);
-        swipevals.add(0.0);
+        swipepath = new ArrayList<float[]>();
+        lines = new ArrayList<float[]>();
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -72,11 +72,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         // Check if the sensors are available
         if (accelerometer == null) {
-            accelerometerValues.setText("Accelerometer not available on this device.");
+            //accelerometerValues.setText("Accelerometer not available on this device.");
         }
 
         if (gyroscope == null) {
-            gyroscopeValues.setText("Gyroscope not available on this device.");
+            //gyroscopeValues.setText("Gyroscope not available on this device.");
         }
     }
 
@@ -113,8 +113,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             accvals.set(0, x);
             accvals.set(1, y);
             accvals.set(2, z);
-            String valuesText = "Accelerometer Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
-            accelerometerValues.setText(valuesText);
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
             float x = event.values[0];
@@ -124,8 +122,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             gyrovals.set(0, x);
             gyrovals.set(1, y);
             gyrovals.set(2, z);
-            String valuesText = "Gyroscope Values: \nX: " + x + "\nY: " + y + "\nZ: " + z;
-            gyroscopeValues.setText(valuesText);
         }
     }
 
@@ -140,59 +136,36 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         if (event.getAction() == MotionEvent.ACTION_DOWN && touched) {
             xTouchStart = event.getX();
             yTouchStart = event.getY();
-            System.out.println(String.valueOf(xTouchStart) + " " + yTouchStart);
+            System.out.println(xTouchStart + " " + yTouchStart);
+            float[] point = {xTouchStart, yTouchStart};
+            swipepath.add(point);
         }
-        if (event.getAction() == MotionEvent.ACTION_UP && touched) {
+        else if (event.getAction() == MotionEvent.ACTION_MOVE && touched) {
+            float[] point = {event.getX(), event.getY()};
+            swipepath.add(point);
+        }
+        else if (event.getAction() == MotionEvent.ACTION_UP && touched) {
             xTouchEnd = event.getX();
             yTouchEnd = event.getY();
-            detectSwipeDirection(xTouchStart, yTouchStart, xTouchEnd, yTouchEnd);
+            float[] point = {xTouchEnd, yTouchEnd};
+            swipepath.add(point);
+
+            for (int i = 0; i < swipepath.size()-1; i++) {
+                float[] curr = swipepath.get(i);
+                float[] next = swipepath.get(i+1);
+                float[] segment = {curr[0], curr[1], next[0], next[1]};
+                lines.add(segment);
+            }
+            swipepath.clear();
         }
         return true;
     }
 
-    private void detectSwipeDirection(float xStart, float yStart, float xEnd, float yEnd) {
-        float deltaX = xEnd - xStart;
-        float deltaY = yEnd - yStart;
-        float minSwipeDistance = 50;
-
-        String direction = "";
-        if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
-            // Horizontal swipe
-            if (Math.abs(deltaY) < minSwipeDistance && Math.abs(deltaX) > minSwipeDistance) {
-                direction = (deltaX > 0) ? "Right" : "Left";
-            }
-            // Vertical swipe
-            else if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) > minSwipeDistance) {
-                direction = (deltaY > 0) ? "Down" : "Up";
-            }
-            // Diagonal Swipe
-            else if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaY) > minSwipeDistance) {
-                if (deltaY < 0 && deltaX < 0) direction = "Up-Left";
-                else if (deltaY < 0 && deltaX > 0) direction = "Up-Right";
-                else if (deltaY > 0 && deltaX < 0) direction = "Down-Left";
-                else if (deltaY > 0 && deltaX > 0) direction = "Down-Right";
-            }
-        }
-        else {
-            direction = "Tap";
-        }
-
-        // Insert into database
-        swipevals.set(0, direction);
-        swipevals.set(1, xStart);
-        swipevals.set(2, yStart);
-        swipevals.set(3, xEnd);
-        swipevals.set(4, yEnd);
+    private void recordSwipe(ArrayList<float[]> lines) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
         Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
         Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
-        Boolean swipeInsert = db.insert_swipe((String) swipevals.get(0), String.valueOf(swipevals.get(1)), String.valueOf(swipevals.get(2)), String.valueOf(swipevals.get(3)), String.valueOf(swipevals.get(4)));
-
-        // Display detailed swipe information
-        String swipeInfoText = "Swipe Info: \nDirection: " + direction +
-                "\nStart X: " + xStart + "\nStart Y: " + yStart +
-                "\nEnd X: " + xEnd + "\nEnd Y: " + yEnd;
-        swipeInfo.setText(swipeInfoText);
+        Boolean swipeInsert = db.insert_swipe(lines, promptLetter);
     }
 
     private void showToast(String message) {
@@ -208,11 +181,36 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         System.out.println("Logging started!");
     }
 
+    public void randPrompt() {
+        Random rand = new Random();
+        int rand_int = rand.nextInt(35);
+        if (rand_int < 26) {
+            char c = (char)(rand_int + 65);
+            userPrompt.setText("Draw Letter '" + ("" + c) + "'");
+            promptLetter = "" + c;
+        }
+        else {
+            userPrompt.setText("Draw Number '" + String.valueOf(rand_int-25) + "'");
+            promptLetter = String.valueOf(rand_int-25);
+        }
+    }
+
+    public void nextPrompt(View view) {
+        recordSwipe(lines);
+        lines.clear();
+        swipepath.clear();
+        randPrompt();
+    }
+
     public void stopLogging(View view) {
         // Called when the "Stop Logging" button is pressed
         accmeter = false;
         gyrmeter = false;
         touched = false;
+
+        recordSwipe(lines);
+        lines.clear();
+        swipepath.clear();
 
         System.out.println("Logging stopped!");
     }

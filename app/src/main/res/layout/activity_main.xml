@@ -15,41 +15,31 @@
         android:onClick="startLogging"/>
 
     <TextView
-        android:id="@+id/accelerometerValues"
+        android:id="@+id/userPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Accelerometer Values: "
-        android:textSize="18sp"
+        android:text=""
+        android:textSize="20sp"
         android:layout_below="@id/startButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="10dp"/>
 
-    <TextView
-        android:id="@+id/gyroscopeValues"
+    <Button
+        android:id="@+id/nextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Gyroscope Values: "
-        android:textSize="18sp"
-        android:layout_below="@id/accelerometerValues"
+        android:text="Next Prompt"
+        android:layout_below="@id/userPrompt"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
-
-    <TextView
-        android:id="@+id/swipeInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Swipe Info: "
-        android:textSize="18sp"
-        android:layout_below="@id/gyroscopeValues"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="450dp"
+        android:onClick="nextPrompt"/>
 
     <Button
         android:id="@+id/stopButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stop Logging"
-        android:layout_below="@id/swipeInfo"
+        android:layout_below="@id/nextButton"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:onClick="stopLogging"/>

@@ -7,19 +7,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials.db",null,1);
+        super(context,"BiolockTrials1.db",null,1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT)");
         db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT)");
-        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, direction TEXT, swi_start_x TEXT, swi_start_y TEXT, swi_end_x TEXT, swi_end_y TEXT)");
+        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT)");
     }
 
     @Override
@@ -59,22 +60,54 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insert_swipe(String direction, String startx, String starty, String endx, String endy) {
-        Random rand = new Random();
-        int rand_int = rand.nextInt(64000);
+    public boolean insert_swipe(ArrayList<float[]> lines, String letter) {
+        // get gesture id
+        String countQuery = "SELECT COALESCE(MAX(gset), 0) FROM swipedata WHERE letter = '" + letter + "'";
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        int gset = 0;
+        long result = -1;
 
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("id", rand_int);
-        cv.put("direction", direction);
-        cv.put("swi_start_x", startx);
-        cv.put("swi_start_y", starty);
-        cv.put("swi_end_x", endx);
-        cv.put("swi_end_y", endy);
-        long result = db.insert("swipedata",null, cv);
-        if(result == -1)
-            return false;
-        return true;
+        try {
+            db = this.getReadableDatabase();
+            cursor = db.rawQuery(countQuery, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                gset = cursor.getInt(0);
+            }
+
+            gset++;
+            // insert to swipedata
+            ContentValues cv = new ContentValues();
+            Random rand = new Random();
+            for (float[] coords : lines) {
+                cv.put("id", rand.nextInt(1000000000));
+                cv.put("start_x", String.valueOf(coords[0]));
+                cv.put("start_y", String.valueOf(coords[1]));
+                cv.put("end_x", String.valueOf(coords[2]));
+                cv.put("end_y", String.valueOf(coords[3]));
+                cv.put("letter", letter);
+                cv.put("gset", gset);
+                result = db.insert("swipedata",null, cv);
+                if (result == -1)
+                    return false;
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+            if (result == -1)
+                return false;
+            else return true;
+        }
     }
 
     public Cursor get_acc() {
