@@ -13,7 +13,7 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials1.db",null,1);
+        super(context,"BiolockTrials2.db",null,1);
     }
 
     @Override
