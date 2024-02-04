@@ -196,9 +196,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     }
 
     public void nextPrompt(View view) {
-        recordSwipe(lines);
-        lines.clear();
-        swipepath.clear();
+        if (lines.size() > 0) {
+            recordSwipe(lines);
+            lines.clear();
+            swipepath.clear();
+        }
         randPrompt();
     }
 
@@ -208,9 +210,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         gyrmeter = false;
         touched = false;
 
-        recordSwipe(lines);
-        lines.clear();
-        swipepath.clear();
+        if (lines.size() > 0) {
+            recordSwipe(lines);
+            lines.clear();
+            swipepath.clear();
+        }
 
         System.out.println("Logging stopped!");
     }
