@@ -7,19 +7,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials2.db",null,1);
+        super(context,"BiolockTrials6.db",null,1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT)");
-        db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT)");
+        db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT)");
     }
 
@@ -29,6 +31,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insert_acc(String accx, String accy, String accz) {
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dt = dateTime.format(formatter);
         Random rand = new Random();
         int rand_int = rand.nextInt(64000);
 
@@ -38,6 +43,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("acc_x", accx);
         cv.put("acc_y", accy);
         cv.put("acc_z", accz);
+        cv.put("timestamp", dt);
         long result = db.insert("accdata",null, cv);
         if(result == -1)
             return false;
@@ -45,6 +51,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insert_gyro(String gyrox, String gyroy, String gyroz) {
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dt = dateTime.format(formatter);
         Random rand = new Random();
         int rand_int = rand.nextInt(64000);
 
@@ -54,6 +63,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("gyro_x", gyrox);
         cv.put("gyro_y", gyroy);
         cv.put("gyro_z", gyroz);
+        cv.put("timestamp", dt);
         long result = db.insert("gyrodata",null, cv);
         if(result == -1)
             return false;

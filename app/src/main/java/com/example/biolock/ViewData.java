@@ -38,7 +38,8 @@ public class ViewData extends Activity {
             String x = acc.getString(1);
             String y = acc.getString(2);
             String z = acc.getString(3);
-            dataAcc.setText(temp + x + " " + y + " " + z + "\n");
+            String dt1 = acc.getString(4);
+            dataAcc.setText(temp + x + " " + y + " " + z + " " + dt1 + "\n");
         }
         while (gyro.moveToNext()) {
             String temp = dataGyro.getText().toString();
@@ -46,7 +47,8 @@ public class ViewData extends Activity {
             String gx = gyro.getString(1);
             String gy = gyro.getString(2);
             String gz = gyro.getString(3);
-            dataGyro.setText(temp + gx + " " + gy + " " + gz + "\n");
+            String dt2 = gyro.getString(4);
+            dataGyro.setText(temp + gx + " " + gy + " " + gz + " " + dt2 + "\n");
         }
         while (swipe.moveToNext()) {
             String temp = dataSwipe.getText().toString();

@@ -113,6 +113,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             accvals.set(0, x);
             accvals.set(1, y);
             accvals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
             float x = event.values[0];
@@ -122,6 +125,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             gyrovals.set(0, x);
             gyrovals.set(1, y);
             gyrovals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
         }
     }
 
@@ -163,8 +169,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private void recordSwipe(ArrayList<float[]> lines) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
-        Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
-        Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
+        //Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
+        //Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
         Boolean swipeInsert = db.insert_swipe(lines, promptLetter);
     }
 
