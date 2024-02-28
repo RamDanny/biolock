@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ViewData extends Activity {
-    private TextView dataAcc, dataGyro, dataSwipe, countDb;
+    private TextView dataAcc, dataGyro, dataMag, dataSwipe, countDb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,12 +25,14 @@ public class ViewData extends Activity {
 
         dataAcc = findViewById(R.id.dataAcc);
         dataGyro = findViewById(R.id.dataGyro);
+        dataMag = findViewById(R.id.dataMag);
         dataSwipe = findViewById(R.id.dataSwipe);
         countDb = findViewById(R.id.countDb);
 
         DatabaseManager db = new DatabaseManager(this);
         Cursor acc = db.get_acc();
         Cursor gyro = db.get_gyro();
+        Cursor mag = db.get_mag();
         Cursor swipe = db.get_swipe();
         while (acc.moveToNext()) {
             String temp = dataAcc.getText().toString();
@@ -49,6 +51,15 @@ public class ViewData extends Activity {
             String gz = gyro.getString(3);
             String dt2 = gyro.getString(4);
             dataGyro.setText(temp + gx + " " + gy + " " + gz + " " + dt2 + "\n");
+        }
+        while (mag.moveToNext()) {
+            String temp = dataMag.getText().toString();
+            String id = String.valueOf(mag.getInt(0));
+            String mx = mag.getString(1);
+            String my = mag.getString(2);
+            String mz = mag.getString(3);
+            String dt3 = mag.getString(4);
+            dataMag.setText(temp + mx + " " + my + " " + mz + " " + dt3 + "\n");
         }
         while (swipe.moveToNext()) {
             String temp = dataSwipe.getText().toString();
@@ -123,7 +134,7 @@ public class ViewData extends Activity {
 
     public void exportDb(View view) {
         String dbName = getResources().getString(R.string.db_name);
-        String[] tables = {"accdata", "gyrodata", "swipedata"};
+        String[] tables = {"accdata", "gyrodata", "magdata", "swipedata"};
         ArrayList<String> csvPaths = new ArrayList<>();
 
         SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(dbName, Context.MODE_PRIVATE, null);

@@ -30,21 +30,28 @@
 
             <TextView
                 android:id="@+id/dataAcc"
-                android:layout_width="100dp"
+                android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="10sp"/>
 
             <TextView
                 android:id="@+id/dataGyro"
-                android:layout_width="100dp"
+                android:layout_width="90dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="10sp"/>
+
+            <TextView
+                android:id="@+id/dataMag"
+                android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="10sp"/>
 
             <TextView
                 android:id="@+id/dataSwipe"
-                android:layout_width="100dp"
+                android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="10sp"/>

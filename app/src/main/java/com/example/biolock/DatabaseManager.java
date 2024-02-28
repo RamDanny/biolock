@@ -15,7 +15,7 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials7.db",null,1);
+        super(context,"BiolockTrials8.db",null,1);
     }
 
     @Override
@@ -23,6 +23,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT)");
+        db.execSQL("CREATE TABLE magdata(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
     }
 
     @Override
@@ -65,6 +66,26 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("gyro_z", gyroz);
         cv.put("timestamp", dt);
         long result = db.insert("gyrodata",null, cv);
+        if(result == -1)
+            return false;
+        return true;
+    }
+
+    public boolean insert_mag(String magx, String magy, String magz) {
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dt = dateTime.format(formatter);
+        Random rand = new Random();
+        int rand_int = rand.nextInt(64000);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("id", rand_int);
+        cv.put("mag_x", magx);
+        cv.put("mag_y", magy);
+        cv.put("mag_z", magz);
+        cv.put("timestamp", dt);
+        long result = db.insert("magdata",null, cv);
         if(result == -1)
             return false;
         return true;
@@ -129,6 +150,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public Cursor get_gyro() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor record = db.rawQuery("SELECT * FROM gyrodata",null);
+        return record;
+    }
+
+    public Cursor get_mag() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor record = db.rawQuery("SELECT * FROM magdata",null);
         return record;
     }
 

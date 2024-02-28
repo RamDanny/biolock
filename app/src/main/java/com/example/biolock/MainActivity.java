@@ -22,12 +22,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor gyroscope;
+    private Sensor magnetometer;
     private TextView accelerometerValues;
     private TextView gyroscopeValues;
     private TextView swipeInfo;
     private TextView userPrompt;
     public static boolean accmeter = false;
     public static boolean gyrmeter = false;
+    public static boolean magmeter = false;
     public static boolean touched = false;
     private float xTouchStart;
     private float yTouchStart;
@@ -35,6 +37,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private float yTouchEnd;
     private ArrayList accvals;
     private ArrayList gyrovals;
+    private ArrayList magvals;
     private ArrayList<float[]> lines;
     private ArrayList<float[]> swipepath;
     private String promptLetter;
@@ -58,6 +61,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         gyrovals.add(0.0);
         gyrovals.add(0.0);
         gyrovals.add(0.0);
+        magvals = new ArrayList(3);
+        magvals.add(0.0);
+        magvals.add(0.0);
+        magvals.add(0.0);
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
 
@@ -66,6 +73,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         if (sensorManager != null) {
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         }
 
         findViewById(android.R.id.content).setOnTouchListener(this);
@@ -77,6 +85,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         if (gyroscope == null) {
             //gyroscopeValues.setText("Gyroscope not available on this device.");
+        }
+
+        if (magnetometer == null) {
+            //
         }
     }
 
@@ -90,6 +102,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         if (gyroscope != null) {
             sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        if (magnetometer != null) {
+            sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -128,6 +144,18 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
             DatabaseManager db = new DatabaseManager(getApplicationContext());
             Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && magmeter) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            magvals.set(0, x);
+            magvals.set(1, y);
+            magvals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean magInsert = db.insert_mag(String.valueOf(magvals.get(0)), String.valueOf(magvals.get(1)), String.valueOf(magvals.get(2)));
         }
     }
 
@@ -182,6 +210,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         // Called when the "Start Logging" button is pressed
         accmeter = true;
         gyrmeter = true;
+        magmeter = true;
         touched = true;
 
         System.out.println("Logging started!");
@@ -214,6 +243,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         // Called when the "Stop Logging" button is pressed
         accmeter = false;
         gyrmeter = false;
+        magmeter = false;
         touched = false;
 
         if (lines.size() > 0) {
