@@ -259,4 +259,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         Intent i = new Intent(MainActivity.this, ViewData.class);
         startActivity(i);
     }
+
+    public void predict(View view) {
+        Intent i = new Intent(MainActivity.this, PredictActivity.class);
+        startActivity(i);
+    }
 }

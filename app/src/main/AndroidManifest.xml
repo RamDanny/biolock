@@ -32,6 +32,9 @@
         <activity
             android:name=".ViewData"
             android:exported="false" />
+        <activity
+            android:name=".PredictActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -31,7 +31,7 @@
         android:text="Next Prompt"
         android:layout_below="@id/userPrompt"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="450dp"
+        android:layout_marginTop="400dp"
         android:onClick="nextPrompt"/>
 
     <Button
@@ -41,7 +41,7 @@
         android:text="Stop Logging"
         android:layout_below="@id/nextButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:onClick="stopLogging"/>
 
     <Button
@@ -53,5 +53,15 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:onClick="viewDb"/>
+
+    <Button
+        android:id="@+id/predictButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Predict"
+        android:layout_below="@id/viewDbButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:onClick="predict"/>
 
 </RelativeLayout>
