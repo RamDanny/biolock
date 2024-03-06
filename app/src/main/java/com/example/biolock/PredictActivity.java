@@ -19,6 +19,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,92 +37,92 @@ public class PredictActivity extends Activity {
         predictOutput = findViewById(R.id.predictOutput);
 
         //// Generate datasets from raw data
+        long fileCount = prepareAcc();
+
         // Read raw dataset csv
         Context context = getApplicationContext();
         String exportFile = "";
-        for (int i = 1; i <= 51; i++) {
+        for (int i = 1; i <= fileCount; i++) {
             double sum_acc_x = 0, sum_acc_y = 0, sum_acc_z = 0;
             double sum_squared_acc_x = 0, sum_squared_acc_y = 0, sum_squared_acc_z = 0;
             double sum_abs_diff_acc_x = 0, sum_abs_diff_acc_y = 0, sum_abs_diff_acc_z = 0;
             double sum_resultant_acceleration = 0;
             double prev_x = 0, prev_y = 0, prev_z = 0;
             int rowCount = 0;
-            try {
-                String fileName = "accdata/accdata(" + i + ").csv";
-                BufferedReader br = new BufferedReader(new InputStreamReader(context.getAssets().open(fileName)));
-                String nextLine;
-                while ((nextLine = br.readLine()) != null) {
-                    String[] parts = nextLine.split(",");
-                    double acc_x = Double.parseDouble(parts[1]);
-                    double acc_y = Double.parseDouble(parts[2]);
-                    double acc_z = Double.parseDouble(parts[3]);
 
-                    sum_acc_x += acc_x;
-                    sum_acc_y += acc_y;
-                    sum_acc_z += acc_z;
+            String fileName = "accdata(" + i + ").csv";
+            String data_i = readFileInternal(getApplicationContext(), fileName);
+            String[] lines = data_i.split("\n");
+            for (String nextLine: lines) {
+                String[] parts = nextLine.split(",");
+                double acc_x = Double.parseDouble(parts[1]);
+                double acc_y = Double.parseDouble(parts[2]);
+                double acc_z = Double.parseDouble(parts[3]);
 
-                    sum_squared_acc_x += Math.pow(acc_x, 2);
-                    sum_squared_acc_y += Math.pow(acc_y, 2);
-                    sum_squared_acc_z += Math.pow(acc_z, 2);
+                sum_acc_x += acc_x;
+                sum_acc_y += acc_y;
+                sum_acc_z += acc_z;
 
-                    if (rowCount > 0) {
-                        sum_abs_diff_acc_x += Math.abs(acc_x - prev_x);
-                        sum_abs_diff_acc_y += Math.abs(acc_y - prev_y);
-                        sum_abs_diff_acc_z += Math.abs(acc_z - prev_z);
-                    } else {
-                        prev_x = acc_x;
-                        prev_y = acc_y;
-                        prev_z = acc_z;
-                    }
+                sum_squared_acc_x += Math.pow(acc_x, 2);
+                sum_squared_acc_y += Math.pow(acc_y, 2);
+                sum_squared_acc_z += Math.pow(acc_z, 2);
 
-                    sum_resultant_acceleration += Math.sqrt(Math.pow(acc_x, 2) + Math.pow(acc_y, 2) + Math.pow(acc_z, 2));
-
-                    rowCount++;
-                }
-
-                double avg_acc_x = sum_acc_x / rowCount;
-                double avg_acc_y = sum_acc_y / rowCount;
-                double avg_acc_z = sum_acc_z / rowCount;
-
-                double std_dev_acc_x = Math.sqrt((sum_squared_acc_x / rowCount) - Math.pow(avg_acc_x, 2));
-                double std_dev_acc_y = Math.sqrt((sum_squared_acc_y / rowCount) - Math.pow(avg_acc_y, 2));
-                double std_dev_acc_z = Math.sqrt((sum_squared_acc_z / rowCount) - Math.pow(avg_acc_z, 2));
-
-                double avg_abs_diff_acc_x = sum_abs_diff_acc_x / (rowCount - 1);
-                double avg_abs_diff_acc_y = sum_abs_diff_acc_y / (rowCount - 1);
-                double avg_abs_diff_acc_z = sum_abs_diff_acc_z / (rowCount - 1);
-
-                double avg_resultant_acceleration = sum_resultant_acceleration / rowCount;
-
-                // Append calculated values to a single CSV file
-                String calculatedValues = avg_acc_x + "," + avg_acc_y + "," + avg_acc_z + "," +
-                        std_dev_acc_x + "," + std_dev_acc_y + "," + std_dev_acc_z + "," +
-                        avg_abs_diff_acc_x + "," + avg_abs_diff_acc_y + "," + avg_abs_diff_acc_z + "," +
-                        avg_resultant_acceleration + "\n";
-                //BufferedWriter writer;
-                exportFile = "calculated_values.csv";
-                if (i == 1) {
-                    writeFileInternal(context, exportFile, calculatedValues, false);
+                if (rowCount > 0) {
+                    sum_abs_diff_acc_x += Math.abs(acc_x - prev_x);
+                    sum_abs_diff_acc_y += Math.abs(acc_y - prev_y);
+                    sum_abs_diff_acc_z += Math.abs(acc_z - prev_z);
                 } else {
-                    writeFileInternal(context, exportFile, calculatedValues, true);
+                    prev_x = acc_x;
+                    prev_y = acc_y;
+                    prev_z = acc_z;
                 }
-                System.out.println(calculatedValues);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+                sum_resultant_acceleration += Math.sqrt(Math.pow(acc_x, 2) + Math.pow(acc_y, 2) + Math.pow(acc_z, 2));
+
+                rowCount++;
             }
+
+            double avg_acc_x = sum_acc_x / rowCount;
+            double avg_acc_y = sum_acc_y / rowCount;
+            double avg_acc_z = sum_acc_z / rowCount;
+
+            double std_dev_acc_x = Math.sqrt((sum_squared_acc_x / rowCount) - Math.pow(avg_acc_x, 2));
+            double std_dev_acc_y = Math.sqrt((sum_squared_acc_y / rowCount) - Math.pow(avg_acc_y, 2));
+            double std_dev_acc_z = Math.sqrt((sum_squared_acc_z / rowCount) - Math.pow(avg_acc_z, 2));
+
+            double avg_abs_diff_acc_x = sum_abs_diff_acc_x / (rowCount - 1);
+            double avg_abs_diff_acc_y = sum_abs_diff_acc_y / (rowCount - 1);
+            double avg_abs_diff_acc_z = sum_abs_diff_acc_z / (rowCount - 1);
+
+            double avg_resultant_acceleration = sum_resultant_acceleration / rowCount;
+
+            // Append calculated values to a single CSV file
+            String calculatedValues = avg_acc_x + "," + avg_acc_y + "," + avg_acc_z + "," +
+                    std_dev_acc_x + "," + std_dev_acc_y + "," + std_dev_acc_z + "," +
+                    avg_abs_diff_acc_x + "," + avg_abs_diff_acc_y + "," + avg_abs_diff_acc_z + "," +
+                    avg_resultant_acceleration + "\n";
+            //BufferedWriter writer;
+            exportFile = "accdata_calc.csv";
+            if (i == 1) {
+                writeFileInternal(context, exportFile, calculatedValues, false);
+            } else {
+                writeFileInternal(context, exportFile, calculatedValues, true);
+            }
+            System.out.println(calculatedValues);
         }
 
         //// Train and Test model from Dataset
         // Read dataset csv
-        String csvFile = exportFile;
+        //String csvFile = exportFile;
         // number of training instances, 2d array of svm nodes, array of labels
-        int numTrainingInstances = 51;
+        int numTrainingInstances = (int) fileCount;
         int numFeatures = 10;
         svm_node[][] trainingData = new svm_node[numTrainingInstances][numFeatures];
         double[] labelsArray = new double[numTrainingInstances];
 
         // Parse file to extract label, features
         String filedata = readFileInternal(context, exportFile);
+        System.out.println("Dataset File:::" + filedata);
         String[] lines = filedata.split("\n");
         int i = 0;
         for (String line : lines) {
@@ -197,17 +200,43 @@ public class PredictActivity extends Activity {
         }
     }
 
-    public void writeFileInternal(Context context, String fileName, String data, boolean append) {
+    public long prepareAcc() {
+        long fileCount = 0;
+        String data = readFileInternal(getApplicationContext(), "accdata.csv");
+        String[] rows = data.split("\n");
+        for (int i = 1; i < rows.length; i++) {
+            String[] parts = rows[i].split(",");
+
+            if (i == 1) {
+                fileCount++;
+                writeFileInternal(getApplicationContext(), "accdata("+fileCount+").csv", rows[i]+"\n", false);
+            }
+            else if (diffInSecs(getDateTime(parts[4]), getDateTime(rows[i-1].split(",")[4])) < 6) {
+                writeFileInternal(getApplicationContext(), "accdata("+fileCount+").csv", rows[i]+"\n", true);
+            }
+            else {
+                fileCount++;
+                writeFileInternal(getApplicationContext(), "accdata("+fileCount+").csv", rows[i]+"\n", false);
+            }
+            //System.out.println("accdata("+fileCount+") = " + rows[i]);
+        }
+        return fileCount;
+    }
+
+    public static void writeFileInternal(Context context, String filePath, String data, boolean append) {
         FileOutputStream fos = null;
         try {
-            fos = context.openFileOutput(fileName, append ? Context.MODE_APPEND : Context.MODE_PRIVATE);
+            File file = new File(context.getFilesDir(), filePath);
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            fos = new FileOutputStream(file, append);
             fos.write(data.getBytes());
             fos.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (fos != null) {
                 try {
                     fos.close();
@@ -218,21 +247,19 @@ public class PredictActivity extends Activity {
         }
     }
 
-    public String readFileInternal(Context context, String fileName) {
+    public static String readFileInternal(Context context, String filePath) {
         FileInputStream fis = null;
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            fis = context.openFileInput(fileName);
+            File file = new File(context.getFilesDir(), filePath);
+            fis = new FileInputStream(file);
             int character;
             while ((character = fis.read()) != -1) {
                 stringBuilder.append((char) character);
             }
-            fis.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (fis != null) {
                 try {
                     fis.close();
@@ -242,6 +269,23 @@ public class PredictActivity extends Activity {
             }
         }
         return stringBuilder.toString();
+    }
+
+    public LocalDateTime getDateTime(String str) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
+            return dateTime;
+        }
+        catch (Exception e) {
+            System.err.println("Error parsing the string: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public long diffInSecs(LocalDateTime dt1, LocalDateTime dt2) {
+        Duration duration = Duration.between(dt1, dt2);
+        return Math.abs(duration.getSeconds());
     }
 
 }

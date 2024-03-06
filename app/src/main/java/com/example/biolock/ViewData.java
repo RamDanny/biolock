@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,12 +82,32 @@ public class ViewData extends Activity {
         startActivity(i);
     }
 
-    public String exportTableToCsv(SQLiteDatabase db, String tableName) {
+    public void exportTableToCsv(SQLiteDatabase db, String tableName) {
         // Query the database to retrieve data from the table
         Cursor cursor = db.rawQuery("SELECT * FROM " + tableName, null);
 
         // Create a CSV file to write the data
-        File exportDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        String header = "";
+        String[] columnNames = cursor.getColumnNames();
+        for (String columnName : columnNames) {
+            header += columnName + ",";
+        }
+        header += "\n";
+        writeFileInternal(getApplicationContext(), tableName+".csv", header, false);
+
+        // Write data rows
+        String row = "";
+        while (cursor.moveToNext()) {
+            row = "";
+            for (int i = 0; i < columnNames.length; i++) {
+                row += cursor.getString(i) + ",";
+            }
+            row += "\n";
+            writeFileInternal(getApplicationContext(), tableName+".csv", row, true);
+        }
+
+        // Create a CSV file to write the data
+        /*File exportDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (!exportDir.exists()) {
             exportDir.mkdirs();
         }
@@ -129,7 +151,7 @@ public class ViewData extends Activity {
             e.printStackTrace();
             Log.e("DatabaseExporter", "Error exporting table '" + tableName + "' to CSV: " + e.getMessage());
             return null;
-        }
+        }*/
     }
 
     public void exportDb(View view) {
@@ -139,10 +161,58 @@ public class ViewData extends Activity {
 
         SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(dbName, Context.MODE_PRIVATE, null);
         for (String table : tables) {
-            String csvPath = exportTableToCsv(db, table);
-            csvPaths.add(csvPath);
-            System.out.println(csvPaths);
+            exportTableToCsv(db, table);
+            //csvPaths.add(csvPath);
+            //System.out.println(csvPaths);
         }
         db.close();
+    }
+
+    public static void writeFileInternal(Context context, String filePath, String data, boolean append) {
+        FileOutputStream fos = null;
+        try {
+            File file = new File(context.getFilesDir(), filePath);
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            fos = new FileOutputStream(file, append);
+            fos.write(data.getBytes());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static String readFileInternal(Context context, String filePath) {
+        FileInputStream fis = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            File file = new File(context.getFilesDir(), filePath);
+            fis = new FileInputStream(file);
+            int character;
+            while ((character = fis.read()) != -1) {
+                stringBuilder.append((char) character);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 }

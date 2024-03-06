@@ -22,7 +22,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT)");
+        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE magdata(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
     }
 
@@ -110,6 +110,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
             gset++;
             // insert to swipedata
             ContentValues cv = new ContentValues();
+            LocalDateTime dateTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String dt = dateTime.format(formatter);
             Random rand = new Random();
             for (float[] coords : lines) {
                 cv.put("id", rand.nextInt(1000000000));
@@ -119,6 +122,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 cv.put("end_y", String.valueOf(coords[3]));
                 cv.put("letter", letter);
                 cv.put("gset", gset);
+                cv.put("timestamp", dt);
                 result = db.insert("swipedata",null, cv);
                 if (result == -1)
                     return false;
