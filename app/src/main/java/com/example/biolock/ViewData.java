@@ -105,53 +105,6 @@ public class ViewData extends Activity {
             row += "\n";
             writeFileInternal(getApplicationContext(), tableName+".csv", row, true);
         }
-
-        // Create a CSV file to write the data
-        /*File exportDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (!exportDir.exists()) {
-            exportDir.mkdirs();
-        }
-        File csvFile = new File(exportDir, tableName + ".csv");
-
-        try {
-            int count = 1;
-            while (csvFile.exists()) {
-                if (csvFile.delete()) {
-                    Log.d("DatabaseExporter", "Deleted existing file: " + csvFile.getAbsolutePath());
-                } else {
-                    Log.e("DatabaseExporter", "Failed to delete existing file: " + csvFile.getAbsolutePath());
-                }
-            }
-            csvFile.createNewFile();
-            FileWriter csvWriter = new FileWriter(csvFile);
-
-            String[] columnNames = cursor.getColumnNames();
-            for (String columnName : columnNames) {
-                csvWriter.append(columnName).append(",");
-            }
-            csvWriter.append("\n");
-
-            // Write data rows
-            while (cursor.moveToNext()) {
-                for (int i = 0; i < columnNames.length; i++) {
-                    csvWriter.append(cursor.getString(i)).append(",");
-                }
-                csvWriter.append("\n");
-            }
-
-            // Close the FileWriter and cursor
-            csvWriter.flush();
-            csvWriter.close();
-            cursor.close();
-
-            Log.d("DatabaseExporter", "Exported table '" + tableName + "' to CSV: " + csvFile.getAbsolutePath());
-            return csvFile.getAbsolutePath();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            Log.e("DatabaseExporter", "Error exporting table '" + tableName + "' to CSV: " + e.getMessage());
-            return null;
-        }*/
     }
 
     public void exportDb(View view) {
