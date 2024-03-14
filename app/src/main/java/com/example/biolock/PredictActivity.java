@@ -39,10 +39,12 @@ public class PredictActivity extends Activity {
 
         double acc_accuracy = predictData(getApplicationContext(), "accdata");
         double gyro_accuracy = predictData(getApplicationContext(), "gyrodata");
+        double mag_accuracy = predictData(getApplicationContext(), "magdata");
         System.out.println("Acc = " + String.valueOf(acc_accuracy));
         System.out.println("Gyro = " + String.valueOf(gyro_accuracy));
+        System.out.println("Mag = " + String.valueOf(mag_accuracy));
 
-        if (acc_accuracy > 70 && gyro_accuracy > 70) {
+        if (acc_accuracy > 70 && gyro_accuracy > 70 && mag_accuracy > 70) {
             predictOutput.setText("VALID");
             predictOutput.setTextColor(Color.GREEN);
         }
