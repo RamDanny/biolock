@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -41,15 +42,16 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private ArrayList<float[]> lines;
     private ArrayList<float[]> swipepath;
     private String promptLetter;
+    private VelocityTracker velocityTracker;
+    private ArrayList<Float> pressures;
+    private ArrayList<float[]> velocities;
+    private ArrayList<Float> touchareas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*accelerometerValues = findViewById(R.id.accelerometerValues);
-        gyroscopeValues = findViewById(R.id.gyroscopeValues);
-        swipeInfo = findViewById(R.id.swipeInfo);*/
         userPrompt = findViewById(R.id.userPrompt);
 
         randPrompt();
@@ -67,6 +69,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         magvals.add(0.0);
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
+        pressures = new ArrayList<>();
+        velocities = new ArrayList<>();
+        touchareas = new ArrayList<>();
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -173,10 +178,33 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             System.out.println(xTouchStart + " " + yTouchStart);
             float[] point = {xTouchStart, yTouchStart};
             swipepath.add(point);
+            velocities.clear();
+            if (velocityTracker == null) {
+                velocityTracker = VelocityTracker.obtain();
+            }
+            else {
+                velocityTracker.clear();
+            }
+            velocityTracker.addMovement(event);
+            pressures.clear();
+            float pressureDown = event.getPressure();
+            touchareas.clear();
+            float toucharea = event.getSize();
         }
         else if (event.getAction() == MotionEvent.ACTION_MOVE && touched) {
             float[] point = {event.getX(), event.getY()};
             swipepath.add(point);
+            velocityTracker.addMovement(event);
+            velocityTracker.computeCurrentVelocity(1000); // Compute velocity in pixels per second
+            float pressureMove = event.getPressure();
+            pressures.add(pressureMove);
+            float velocityX = velocityTracker.getXVelocity();
+            float velocityY = velocityTracker.getYVelocity();
+            float[] vels = {velocityX, velocityY};
+            velocities.add(vels);
+            float toucharea = event.getSize();
+            touchareas.add(toucharea);
+
         }
         else if (event.getAction() == MotionEvent.ACTION_UP && touched) {
             xTouchEnd = event.getX();
@@ -197,9 +225,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private void recordSwipe(ArrayList<float[]> lines) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
-        //Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)));
-        //Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)));
-        Boolean swipeInsert = db.insert_swipe(lines, promptLetter);
+        Boolean swipeInsert = db.insert_swipe(lines, pressures, velocities, touchareas, promptLetter);
     }
 
     private void showToast(String message) {

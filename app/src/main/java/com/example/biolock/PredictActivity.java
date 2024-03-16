@@ -40,11 +40,13 @@ public class PredictActivity extends Activity {
         double acc_accuracy = predictData(getApplicationContext(), "accdata");
         double gyro_accuracy = predictData(getApplicationContext(), "gyrodata");
         double mag_accuracy = predictData(getApplicationContext(), "magdata");
+        double swipe_accuracy = predictSwipe(getApplicationContext());
         System.out.println("Acc = " + String.valueOf(acc_accuracy));
         System.out.println("Gyro = " + String.valueOf(gyro_accuracy));
         System.out.println("Mag = " + String.valueOf(mag_accuracy));
+        System.out.println("Swipe = " + String.valueOf(swipe_accuracy));
 
-        if (acc_accuracy > 70 && gyro_accuracy > 70 && mag_accuracy > 70) {
+        if (acc_accuracy > 70 && gyro_accuracy > 70 && mag_accuracy > 70 && swipe_accuracy > 70) {
             predictOutput.setText("VALID");
             predictOutput.setTextColor(Color.GREEN);
         }
@@ -228,12 +230,203 @@ public class PredictActivity extends Activity {
         double accuracy = (correct * 100.0) / total;
         System.out.println("Accuracy = " + correct + "/"+ total + " = " + String.valueOf(accuracy));
         return accuracy;
+    }
 
-        /*ArrayList al = new ArrayList<>(3);
-        al.add(0, exportFile);
-        al.add(1, fileCount);
-        al.add(2, numFeatures);
-        return al;*/
+    public double predictSwipe(Context context) {
+        String sensor = "swipedata";
+        // Generate dataset
+        // Parse data into files for each gesture
+        int fileCount = 0;
+        String data = readFileInternal(getApplicationContext(), sensor+".csv");
+        String[] filerows = data.split("\n");
+        for (int i = 1; i < filerows.length; i++) {
+            String[] parts = filerows[i].split(",");
+
+            if (i == 1) {
+                fileCount++;
+                writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", false);
+            }
+            else if (parts[9].equals(filerows[i-1].split(",")[9])) {
+                writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", true);
+            }
+            else {
+                fileCount++;
+                writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", false);
+            }
+            //System.out.println(sensor+"("+fileCount+") = " + filerows[i]);
+        }
+        System.out.println(sensor+": "+fileCount+" files written");
+
+        // Generate feature dataset using gesture files
+        String exportFile = "";
+        int numFeatures = 0;
+
+        for (int i = 1; i <= fileCount; i++) {
+            ArrayList<Float> coord_x = new ArrayList<>();
+            ArrayList<Float> coord_y = new ArrayList<>();
+            float sum_vel_x = 0, sum_vel_y = 0;
+            float sum_acc_x = 0, sum_acc_y = 0;
+            float sum_pressure = 0;
+            float sum_area = 0;
+            float dev_20_x = 0, dev_20_y = 0;
+            float dev_50_x = 0, dev_50_y = 0;
+            float dev_80_x = 0, dev_80_y = 0;
+            int rowCount = 0;
+            String letter = "";
+            String fileName = sensor+"(" + i + ").csv";
+            String data_i = readFileInternal(getApplicationContext(), fileName);
+            String[] lines = data_i.split("\n");
+            String[] prev = {};
+            for (int j = 0; j < lines.length; j++) {
+                String nextLine = lines[j];
+                String[] parts = nextLine.split(",");
+                coord_x.add(Float.parseFloat(parts[3]));
+                coord_y.add(Float.parseFloat(parts[4]));
+                float vel_x = Float.parseFloat(parts[5]);
+                float vel_y = Float.parseFloat(parts[6]);
+                if (j == 0) {
+                    coord_x.add(0, Float.parseFloat(parts[1]));
+                    coord_y.add(0, Float.parseFloat(parts[2]));
+                }
+                else {
+                    LocalDateTime ts = getDateTime(parts[11]);
+                    LocalDateTime prev_ts = getDateTime(prev[11]);
+                    sum_acc_x += Math.abs(vel_x - Float.parseFloat(prev[5])); // (diffInSecs(prev_ts, ts) * 100);
+                    sum_acc_y += Math.abs(vel_y - Float.parseFloat(prev[6])); // (diffInSecs(prev_ts, ts) * 100);
+                    coord_x.add(0, Float.parseFloat(parts[3]));
+                    coord_y.add(0, Float.parseFloat(parts[4]));
+                }
+                float pressure = Float.parseFloat(parts[7]);
+                float toucharea = Float.parseFloat(parts[8]);
+                letter = parts[9];
+
+                sum_vel_x += Math.abs(vel_x);
+                sum_vel_y += Math.abs(vel_y);
+                sum_pressure += pressure;
+                sum_area += toucharea;
+
+                rowCount++;
+                prev = parts;
+            }
+
+            for (int k = 0; k < coord_x.size(); k++) {
+                int twenty = coord_x.size() / 5;
+                int fifty = coord_x.size() / 2;
+                int eighty = (coord_x.size() * 4) / 5;
+                dev_20_x += Math.abs(coord_x.get(k) - coord_x.get(twenty));
+                dev_20_y += Math.abs(coord_y.get(k) - coord_y.get(twenty));
+                dev_50_x += Math.abs(coord_x.get(k) - coord_x.get(fifty));
+                dev_50_y += Math.abs(coord_y.get(k) - coord_y.get(fifty));
+                dev_80_x += Math.abs(coord_x.get(k) - coord_x.get(eighty));
+                dev_80_y += Math.abs(coord_y.get(k) - coord_y.get(eighty));
+            }
+
+            float avg_vel_x = sum_vel_x / rowCount;
+            float avg_vel_y = sum_vel_y / rowCount;
+            float avg_acc_x = sum_acc_x / rowCount;
+            float avg_acc_y = sum_acc_y / rowCount;
+            float avg_pressure = sum_pressure / rowCount;
+            float avg_area = sum_area / rowCount;
+            float avg_dev_20_x = dev_20_x / rowCount, avg_dev_20_y = dev_20_y / rowCount;
+            float avg_dev_50_x = dev_50_x / rowCount, avg_dev_50_y = dev_50_y / rowCount;
+            float avg_dev_80_x = dev_80_x / rowCount, avg_dev_80_y = dev_80_y / rowCount;
+
+            // Append calculated values to a single CSV file
+            String calculatedValues = letter + "," +
+                    avg_vel_x + "," + avg_vel_y + "," +
+                    avg_acc_x + "," + avg_acc_y + "," +
+                    avg_pressure + "," + avg_area + "," +
+                    avg_dev_20_x + "," + avg_dev_20_y + "," +
+                    avg_dev_50_x + "," + avg_dev_50_y + "," +
+                    avg_dev_80_x + "," + avg_dev_80_y + "\n";
+            exportFile = sensor+"_calc.csv";
+            numFeatures = calculatedValues.split(",").length - 1;
+            if (i == 1) {
+                writeFileInternal(context, exportFile, calculatedValues, false);
+            } else {
+                writeFileInternal(context, exportFile, calculatedValues, true);
+            }
+            System.out.println(calculatedValues);
+        }
+
+        System.out.println(sensor+"_calc dataset created");
+
+        // Export to external filesystem
+        copyToDownloads(context, sensor+".csv");
+        copyToDownloads(context, sensor+"_calc.csv");
+
+
+        // Train, test, predict
+        // Read dataset csv
+        // number of training instances, 2d array of svm nodes, array of labels
+        int numTrainingInstances = fileCount;
+        svm_node[][] trainingData = new svm_node[numTrainingInstances][numFeatures];
+        double[] labelsArray = new double[numTrainingInstances];
+
+        // Parse file to extract label, features
+        String filedata = readFileInternal(context, exportFile);
+        //System.out.println("Dataset File:::" + filedata);
+        String[] lines = filedata.split("\n");
+        int i = 0;
+        for (String line : lines) {
+            String[] parts = line.split(",");
+            for (int j = 0; j < numFeatures; j++) {
+                trainingData[i][j] = new svm_node();
+                trainingData[i][j].index = j+1;
+                trainingData[i][j].value = Double.parseDouble(parts[j+1]);
+            }
+            System.out.println();
+            labelsArray[i] = parts[0].charAt(0);
+            i++;
+        }
+
+        // Prepare training data
+        svm_problem prob = new svm_problem();
+        prob.l = numTrainingInstances; // Number of training instances
+        prob.x = trainingData; // Array of svm_node arrays representing training instances
+        prob.y = labelsArray; // Array of class labels for training instances
+
+        // Set SVM parameters
+        svm_parameter param = new svm_parameter();
+        param.svm_type = svm_parameter.C_SVC;
+        param.kernel_type = svm_parameter.RBF;
+        param.C = 1.0; // Penalty parameter C of the error term
+        param.gamma = 0.000025;
+        //param.nu = 0.1;
+        //param.degree = 3;
+        //param.coef0 = 4.0;
+        System.out.println("Gamma = " + String.valueOf(param.gamma));
+
+        // Train the model
+        svm_model model = svm.svm_train(prob, param);
+
+        // Prepare test data
+        String testfile = readFileInternal(context, exportFile);
+        String[] testrows = testfile.split("\n");
+        int rows = testrows.length;
+        int cols = testrows[0].split(",").length;
+        svm_node[][] testdata = new svm_node[rows][cols-1];
+        for (int x = 0; x < rows; x++) {
+            String[] testline = testrows[x].split(",");
+            for (int y = 0; y < cols-1; y++) {
+                testdata[x][y] = new svm_node();
+                testdata[x][y].index = y+1;
+                testdata[x][y].value = Double.parseDouble(testline[y+1]);
+            }
+        }
+        System.out.println("Test data ready!");
+
+        // Make prediction
+        double val = 0;
+        int total = rows, correct = 0;
+        for (int k = 0; k < rows; k++) {
+            val = svm.svm_predict(model, testdata[k]);
+            if (val == labelsArray[k]) correct++;
+            System.out.println("Prediction " + k + " = " + String.valueOf(val));
+        }
+        double accuracy = (correct * 100.0) / total;
+        System.out.println("Accuracy = " + correct + "/"+ total + " = " + String.valueOf(accuracy));
+        return accuracy;
     }
 
     public static void writeFileInternal(Context context, String filePath, String data, boolean append) {

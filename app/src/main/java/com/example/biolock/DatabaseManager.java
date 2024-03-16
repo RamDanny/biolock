@@ -15,14 +15,14 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials11.db",null,1);
+        super(context,"BiolockTrials12.db",null,1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, letter TEXT, gset INT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE magdata(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
     }
 
@@ -36,7 +36,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
         Random rand = new Random();
-        int rand_int = rand.nextInt(64000);
+        int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -56,7 +56,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
         Random rand = new Random();
-        int rand_int = rand.nextInt(64000);
+        int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -76,7 +76,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
         Random rand = new Random();
-        int rand_int = rand.nextInt(64000);
+        int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -91,7 +91,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insert_swipe(ArrayList<float[]> lines, String letter) {
+    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<Float> touchareas, String letter) {
         // get gesture id
         String countQuery = "SELECT COALESCE(MAX(gset), 0) FROM swipedata WHERE letter = '" + letter + "'";
         SQLiteDatabase db = null;
@@ -114,12 +114,20 @@ public class DatabaseManager extends SQLiteOpenHelper {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String dt = dateTime.format(formatter);
             Random rand = new Random();
-            for (float[] coords : lines) {
+            for (int i = 0; i < lines.size(); i++) {
+                float[] coords = lines.get(i);
+                float pressure = pressures.get(i);
+                float[] velocity = velocities.get(i);
+                float area = touchareas.get(i);
                 cv.put("id", rand.nextInt(1000000000));
                 cv.put("start_x", String.valueOf(coords[0]));
                 cv.put("start_y", String.valueOf(coords[1]));
                 cv.put("end_x", String.valueOf(coords[2]));
                 cv.put("end_y", String.valueOf(coords[3]));
+                cv.put("vel_x", String.valueOf(velocity[0]));
+                cv.put("vel_y", String.valueOf(velocity[1]));
+                cv.put("pressure", String.valueOf(pressure));
+                cv.put("toucharea", String.valueOf(area));
                 cv.put("letter", letter);
                 cv.put("gset", gset);
                 cv.put("timestamp", dt);
