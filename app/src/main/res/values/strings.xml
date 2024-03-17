@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Biolock</string>
-    <string name="db_name">BiolockTrials12.db</string>
+    <string name="app_title">Biolock</string>
+    <string name="app_desc">A Behavioral Biometric framework to implement continuous authentication</string>
+    <string name="app_trainButtonHome">Train</string>
+    <string name="app_testButtonHome">Test</string>
+    <string name="app_authors">by \nRamdhanush.V &amp; Sanchit Pawar</string>
+    <string name="db_name">BiolockReals1.db</string>
 </resources>

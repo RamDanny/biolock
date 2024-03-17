@@ -5,8 +5,8 @@
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
     <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="true" />
     <uses-feature android:name="android.hardware.sensor.magnetometer" android:required="true" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="true" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -29,11 +29,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ViewData"
-            android:exported="false" />
+            android:name=".TrainActivity"
+            android:exported="true" />
         <activity
-            android:name=".PredictActivity"
-            android:exported="false" />
+            android:name=".ViewData"
+            android:exported="true" />
+        <activity
+            android:name=".TrainModel"
+            android:exported="true" />
+        <activity
+            android:name=".TestActivity"
+            android:exported="true" />
+        <activity
+            android:name=".TestModel"
+            android:exported="true" />
     </application>
 
 </manifest>

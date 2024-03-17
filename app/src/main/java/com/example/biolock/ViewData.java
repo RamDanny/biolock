@@ -20,10 +20,14 @@ import java.util.ArrayList;
 
 public class ViewData extends Activity {
     private TextView dataAcc, dataGyro, dataMag, dataSwipe, countDb;
+    private boolean train_mode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewdata);
+
+        Intent i = getIntent();
+        train_mode = i.getBooleanExtra("train_mode", true);
 
         dataAcc = findViewById(R.id.dataAcc);
         dataGyro = findViewById(R.id.dataGyro);
@@ -32,10 +36,10 @@ public class ViewData extends Activity {
         countDb = findViewById(R.id.countDb);
 
         DatabaseManager db = new DatabaseManager(this);
-        Cursor acc = db.get_acc();
-        Cursor gyro = db.get_gyro();
-        Cursor mag = db.get_mag();
-        Cursor swipe = db.get_swipe();
+        Cursor acc = db.get_acc(train_mode);
+        Cursor gyro = db.get_gyro(train_mode);
+        Cursor mag = db.get_mag(train_mode);
+        Cursor swipe = db.get_swipe(train_mode);
         while (acc.moveToNext()) {
             String temp = dataAcc.getText().toString();
             String id = String.valueOf(acc.getInt(0));
@@ -74,11 +78,17 @@ public class ViewData extends Activity {
             int gset = swipe.getInt(6);
             dataSwipe.setText(temp + letter + " | " + gset + " | " + startx + " " + starty + "\n");
         }
-        countDb.setText(String.valueOf(db.getRowCount()));
+        countDb.setText(String.valueOf(db.getRowCount(train_mode)));
     }
 
     public void backHome(View view) {
-        Intent i = new Intent(ViewData.this, MainActivity.class);
+        Intent i;
+        if (train_mode) {
+            i = new Intent(ViewData.this, TrainActivity.class);
+        }
+        else {
+            i = new Intent(ViewData.this, TestActivity.class);
+        }
         startActivity(i);
     }
 
@@ -109,14 +119,17 @@ public class ViewData extends Activity {
 
     public void exportDb(View view) {
         String dbName = getResources().getString(R.string.db_name);
-        String[] tables = {"accdata", "gyrodata", "magdata", "swipedata"};
-        ArrayList<String> csvPaths = new ArrayList<>();
+        String[] tables;
+        if (train_mode) {
+            tables = new String[]{"accdata", "gyrodata", "magdata", "swipedata"};
+        }
+        else {
+            tables = new String[]{"accdata_test", "gyrodata_test", "magdata_test", "swipedata_test"};
+        }
 
         SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(dbName, Context.MODE_PRIVATE, null);
         for (String table : tables) {
             exportTableToCsv(db, table);
-            //csvPaths.add(csvPath);
-            //System.out.println(csvPaths);
         }
         db.close();
     }

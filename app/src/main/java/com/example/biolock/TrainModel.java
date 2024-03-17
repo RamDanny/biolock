@@ -28,36 +28,24 @@ import java.util.List;
 
 import libsvm.*;
 
-public class PredictActivity extends Activity {
-    private TextView predictOutput;
+public class TrainModel extends Activity {
+    private TextView trainText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_predict);
+        setContentView(R.layout.activity_trainmodel);
 
-        predictOutput = findViewById(R.id.predictOutput);
+        trainText = findViewById(R.id.trainText);
 
-        double acc_accuracy = predictData(getApplicationContext(), "accdata");
-        double gyro_accuracy = predictData(getApplicationContext(), "gyrodata");
-        double mag_accuracy = predictData(getApplicationContext(), "magdata");
-        double swipe_accuracy = predictSwipe(getApplicationContext());
-        System.out.println("Acc = " + String.valueOf(acc_accuracy));
-        System.out.println("Gyro = " + String.valueOf(gyro_accuracy));
-        System.out.println("Mag = " + String.valueOf(mag_accuracy));
-        System.out.println("Swipe = " + String.valueOf(swipe_accuracy));
-
-        if (acc_accuracy > 70 && gyro_accuracy > 70 && mag_accuracy > 70 && swipe_accuracy > 70) {
-            predictOutput.setText("VALID");
-            predictOutput.setTextColor(Color.GREEN);
-        }
-        else {
-            predictOutput.setText("NOT VALID");
-            predictOutput.setTextColor(Color.RED);
-        }
-
+        trainModel(getApplicationContext(), "accdata");
+        trainModel(getApplicationContext(), "gyrodata");
+        trainModel(getApplicationContext(), "magdata");
+        trainSwipe(getApplicationContext());
+        trainText.setText("Training Completed!");
+        Log.d("TrainingResult", "Training successful!");
     }
 
-    public double predictData(Context context, String sensor) {
+    public void trainModel(Context context, String sensor) {
         // Generate dataset
         // Parse data into files for each gesture
         int fileCount = 0;
@@ -159,7 +147,7 @@ public class PredictActivity extends Activity {
         copyToDownloads(context, sensor+"_calc.csv");
 
 
-        // Train, test, predict
+        // Training
         // Read dataset csv
         // number of training instances, 2d array of svm nodes, array of labels
         int numTrainingInstances = fileCount;
@@ -203,36 +191,22 @@ public class PredictActivity extends Activity {
         // Train the model
         svm_model model = svm.svm_train(prob, param);
 
-        // Prepare test data
-        String testfile = readFileInternal(context, exportFile);
-        String[] testrows = testfile.split("\n");
-        int rows = testrows.length;
-        int cols = testrows[0].split(",").length;
-        svm_node[][] testdata = new svm_node[rows][cols];
-        for (int x = 0; x < rows; x++) {
-            String[] testline = testrows[x].split(",");
-            for (int y = 0; y < cols; y++) {
-                testdata[x][y] = new svm_node();
-                testdata[x][y].index = y + 1;
-                testdata[x][y].value = Double.parseDouble(testline[y]);
+        // Export the model
+        try {
+            File file = new File(context.getFilesDir(), sensor+"_model.csv");
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                parentDir.mkdirs();
             }
+            svm.svm_save_model(file.getAbsolutePath(), model);
+            Log.d("ModelExport", "Exported model  " + sensor + "_model.csv  successfully!");
         }
-        System.out.println("Test data ready!");
-
-        // Make prediction
-        double val = 0;
-        int total = rows, correct = 0;
-        for (int k = 0; k < rows; k++) {
-            val = svm.svm_predict(model, testdata[k]);
-            if (val == 1) correct++;
-            System.out.println("Prediction " + k + " = " + String.valueOf(val));
+        catch (IOException e) {
+            e.printStackTrace();
         }
-        double accuracy = (correct * 100.0) / total;
-        System.out.println("Accuracy = " + correct + "/"+ total + " = " + String.valueOf(accuracy));
-        return accuracy;
     }
 
-    public double predictSwipe(Context context) {
+    public void trainSwipe(Context context) {
         String sensor = "swipedata";
         // Generate dataset
         // Parse data into files for each gesture
@@ -356,7 +330,7 @@ public class PredictActivity extends Activity {
         copyToDownloads(context, sensor+"_calc.csv");
 
 
-        // Train, test, predict
+        // Training
         // Read dataset csv
         // number of training instances, 2d array of svm nodes, array of labels
         int numTrainingInstances = fileCount;
@@ -400,33 +374,19 @@ public class PredictActivity extends Activity {
         // Train the model
         svm_model model = svm.svm_train(prob, param);
 
-        // Prepare test data
-        String testfile = readFileInternal(context, exportFile);
-        String[] testrows = testfile.split("\n");
-        int rows = testrows.length;
-        int cols = testrows[0].split(",").length;
-        svm_node[][] testdata = new svm_node[rows][cols-1];
-        for (int x = 0; x < rows; x++) {
-            String[] testline = testrows[x].split(",");
-            for (int y = 0; y < cols-1; y++) {
-                testdata[x][y] = new svm_node();
-                testdata[x][y].index = y+1;
-                testdata[x][y].value = Double.parseDouble(testline[y+1]);
+        // Export the model
+        try {
+            File file = new File(context.getFilesDir(), sensor+"_model.csv");
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                parentDir.mkdirs();
             }
+            svm.svm_save_model(file.getAbsolutePath(), model);
+            Log.d("ModelExport", "Exported model  " + sensor + "_model.csv  successfully!");
         }
-        System.out.println("Test data ready!");
-
-        // Make prediction
-        double val = 0;
-        int total = rows, correct = 0;
-        for (int k = 0; k < rows; k++) {
-            val = svm.svm_predict(model, testdata[k]);
-            if (val == labelsArray[k]) correct++;
-            System.out.println("Prediction " + k + " = " + String.valueOf(val));
+        catch (IOException e) {
+            e.printStackTrace();
         }
-        double accuracy = (correct * 100.0) / total;
-        System.out.println("Accuracy = " + correct + "/"+ total + " = " + String.valueOf(accuracy));
-        return accuracy;
     }
 
     public static void writeFileInternal(Context context, String filePath, String data, boolean append) {

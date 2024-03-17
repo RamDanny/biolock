@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PredictActivity">
+    tools:context=".TestModel">
 
     <TextView
-        android:id="@+id/predictText"
+        android:id="@+id/testText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="The user is :"
@@ -18,7 +18,7 @@
         android:layout_marginTop="200dp" />
 
     <TextView
-        android:id="@+id/predictOutput"
+        android:id="@+id/testOutput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
@@ -26,7 +26,7 @@
         android:fontFamily="monospace"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/predictText"
+        android:layout_below="@id/testText"
         android:layout_marginTop="10dp" />
 
 </RelativeLayout>

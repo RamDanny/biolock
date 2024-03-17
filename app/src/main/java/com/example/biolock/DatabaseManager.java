@@ -15,7 +15,7 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockTrials12.db",null,1);
+        super(context,"BiolockReals1.db",null,1);
     }
 
     @Override
@@ -24,6 +24,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE magdata(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
+
+        db.execSQL("CREATE TABLE accdata_test(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE gyrodata_test(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE magdata_test(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata_test(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
     }
 
     @Override
@@ -31,7 +36,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     }
 
-    public boolean insert_acc(String accx, String accy, String accz) {
+    public boolean insert_acc(String accx, String accy, String accz, boolean train_mode) {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
@@ -45,13 +50,19 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("acc_y", accy);
         cv.put("acc_z", accz);
         cv.put("timestamp", dt);
-        long result = db.insert("accdata",null, cv);
+        long result;
+        if (train_mode) {
+            result = db.insert("accdata",null, cv);
+        }
+        else {
+            result = db.insert("accdata_test",null, cv);
+        }
         if(result == -1)
             return false;
         return true;
     }
 
-    public boolean insert_gyro(String gyrox, String gyroy, String gyroz) {
+    public boolean insert_gyro(String gyrox, String gyroy, String gyroz, boolean train_mode) {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
@@ -65,13 +76,19 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("gyro_y", gyroy);
         cv.put("gyro_z", gyroz);
         cv.put("timestamp", dt);
-        long result = db.insert("gyrodata",null, cv);
+        long result;
+        if (train_mode) {
+            result = db.insert("gyrodata",null, cv);
+        }
+        else {
+            result = db.insert("gyrodata_test",null, cv);
+        }
         if(result == -1)
             return false;
         return true;
     }
 
-    public boolean insert_mag(String magx, String magy, String magz) {
+    public boolean insert_mag(String magx, String magy, String magz, boolean train_mode) {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
@@ -85,13 +102,19 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cv.put("mag_y", magy);
         cv.put("mag_z", magz);
         cv.put("timestamp", dt);
-        long result = db.insert("magdata",null, cv);
+        long result;
+        if (train_mode) {
+            result = db.insert("magdata", null, cv);
+        }
+        else {
+            result = db.insert("magdata_test", null, cv);
+        }
         if(result == -1)
             return false;
         return true;
     }
 
-    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<Float> touchareas, String letter) {
+    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<Float> touchareas, String letter, boolean train_mode) {
         // get gesture id
         String countQuery = "SELECT COALESCE(MAX(gset), 0) FROM swipedata WHERE letter = '" + letter + "'";
         SQLiteDatabase db = null;
@@ -131,7 +154,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 cv.put("letter", letter);
                 cv.put("gset", gset);
                 cv.put("timestamp", dt);
-                result = db.insert("swipedata",null, cv);
+                if (train_mode) {
+                    result = db.insert("swipedata", null, cv);
+                }
+                else {
+                    result = db.insert("swipedata_test", null, cv);
+                }
                 if (result == -1)
                     return false;
             }
@@ -153,32 +181,62 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor get_acc() {
+    public Cursor get_acc(boolean train_mode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor record = db.rawQuery("SELECT * FROM accdata",null);
+        Cursor record;
+        if (train_mode) {
+            record = db.rawQuery("SELECT * FROM accdata", null);
+        }
+        else {
+            record = db.rawQuery("SELECT * FROM accdata_test", null);
+        }
         return record;
     }
 
-    public Cursor get_gyro() {
+    public Cursor get_gyro(boolean train_mode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor record = db.rawQuery("SELECT * FROM gyrodata",null);
+        Cursor record;
+        if (train_mode) {
+            record = db.rawQuery("SELECT * FROM gyrodata", null);
+        }
+        else {
+            record = db.rawQuery("SELECT * FROM gyrodata_test", null);
+        }
         return record;
     }
 
-    public Cursor get_mag() {
+    public Cursor get_mag(boolean train_mode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor record = db.rawQuery("SELECT * FROM magdata",null);
+        Cursor record;
+        if (train_mode) {
+            record = db.rawQuery("SELECT * FROM magdata", null);
+        }
+        else {
+            record = db.rawQuery("SELECT * FROM magdata_test", null);
+        }
         return record;
     }
 
-    public Cursor get_swipe() {
+    public Cursor get_swipe(boolean train_mode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor record = db.rawQuery("SELECT * FROM swipedata",null);
+        Cursor record;
+        if (train_mode) {
+            record = db.rawQuery("SELECT * FROM swipedata", null);
+        }
+        else {
+            record = db.rawQuery("SELECT * FROM swipedata_test", null);
+        }
         return record;
     }
 
-    public int getRowCount() {
-        String countQuery = "SELECT COUNT(*) FROM swipedata";
+    public int getRowCount(boolean train_mode) {
+        String countQuery;
+        if (train_mode) {
+            countQuery = "SELECT COUNT(*) FROM swipedata";
+        }
+        else {
+            countQuery = "SELECT COUNT(*) FROM swipedata_test";
+        }
         SQLiteDatabase db = null;
         Cursor cursor = null;
         int count = 0;
