@@ -366,6 +366,7 @@ public class TrainModel extends Activity {
         param.kernel_type = svm_parameter.RBF;
         param.C = 1.0; // Penalty parameter C of the error term
         param.gamma = 0.000025;
+        //param.nr_weight = 0;
         //param.nu = 0.1;
         //param.degree = 3;
         //param.coef0 = 4.0;
