@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TestActivitySwipe">
+
+    <Button
+        android:id="@+id/startButtonTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:onClick="startLogging"
+        android:text="Start Logging"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:id="@+id/userPromptTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/startButtonTest"
+        android:layout_centerHorizontal="true"
+        android:text=""
+        android:textSize="20sp"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/nextButtonTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userPromptTest"
+        android:layout_centerHorizontal="true"
+        android:onClick="nextPrompt"
+        android:text="Next Prompt"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="400dp" />
+
+    <Button
+        android:id="@+id/stopButtonTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nextButtonTest"
+        android:layout_centerHorizontal="true"
+        android:onClick="stopLogging"
+        android:text="Stop Logging"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/viewDbButtonTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/stopButtonTest"
+        android:layout_centerHorizontal="true"
+        android:onClick="viewDb"
+        android:text="View Logged Data"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewDbButtonTest"
+        android:layout_centerHorizontal="true"
+        android:onClick="testButton"
+        android:text="Test"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="10dp" />
+
+</RelativeLayout>

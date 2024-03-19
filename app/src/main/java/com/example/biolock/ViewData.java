@@ -6,17 +6,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class ViewData extends Activity {
     private TextView dataAcc, dataGyro, dataMag, dataSwipe, countDb;
@@ -27,14 +23,14 @@ public class ViewData extends Activity {
         setContentView(R.layout.activity_viewdata);
 
         Intent i = getIntent();
-        train_mode = i.getBooleanExtra("train_mode", true);
+        train_mode = i.getBooleanExtra("train_mode", false);
 
         dataAcc = findViewById(R.id.dataAcc);
         dataGyro = findViewById(R.id.dataGyro);
         dataMag = findViewById(R.id.dataMag);
         dataSwipe = findViewById(R.id.dataSwipe);
         countDb = findViewById(R.id.countDb);
-
+        System.out.println("TRAIN MDOE IS: "+train_mode);
         DatabaseManager db = new DatabaseManager(this);
         Cursor acc = db.get_acc(train_mode);
         Cursor gyro = db.get_gyro(train_mode);
@@ -82,19 +78,17 @@ public class ViewData extends Activity {
     }
 
     public void backHome(View view) {
-        Intent i;
-        if (train_mode) {
-            i = new Intent(ViewData.this, TrainActivity.class);
-        }
-        else {
-            i = new Intent(ViewData.this, TestActivity.class);
-        }
+        Intent i = new Intent(ViewData.this, MainActivity.class);
         startActivity(i);
     }
 
     public void exportTableToCsv(SQLiteDatabase db, String tableName) {
         // Query the database to retrieve data from the table
         Cursor cursor = db.rawQuery("SELECT * FROM " + tableName, null);
+
+
+        System.out.println("Exporting "+tableName+ ".csv in exportTableToCsv function");
+
 
         // Create a CSV file to write the data
         String header = "";
@@ -114,7 +108,10 @@ public class ViewData extends Activity {
             }
             row += "\n";
             writeFileInternal(getApplicationContext(), tableName+".csv", row, true);
+
+
         }
+        System.out.println("Exporting "+tableName+ ".csv finished");
     }
 
     public void exportDb(View view) {
@@ -130,6 +127,7 @@ public class ViewData extends Activity {
         SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(dbName, Context.MODE_PRIVATE, null);
         for (String table : tables) {
             exportTableToCsv(db, table);
+
         }
         db.close();
     }

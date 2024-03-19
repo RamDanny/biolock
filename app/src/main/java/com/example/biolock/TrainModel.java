@@ -1,32 +1,27 @@
 package com.example.biolock;
 
 import android.app.Activity;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.graphics.Color;
-import android.os.Bundle;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 
-import libsvm.*;
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
+import libsvm.svm_parameter;
+import libsvm.svm_problem;
 
 public class TrainModel extends Activity {
     private TextView trainText;
@@ -336,7 +331,7 @@ public class TrainModel extends Activity {
         int numTrainingInstances = fileCount;
         svm_node[][] trainingData = new svm_node[numTrainingInstances][numFeatures];
         double[] labelsArray = new double[numTrainingInstances];
-
+        exportFile = "swipedata_calc.csv";
         // Parse file to extract label, features
         String filedata = readFileInternal(context, exportFile);
         //System.out.println("Dataset File:::" + filedata);

@@ -29,13 +29,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TrainActivity"
-            android:exported="true" />
-        <activity
             android:name=".ViewData"
             android:exported="true" />
         <activity
             android:name=".TrainModel"
+            android:exported="true" />
+        <activity
+            android:name=".TrainActivityAgm"
+            android:exported="true" />
+        <activity
+            android:name=".TrainActivitySwipe"
+            android:exported="true" />
+        <activity
+            android:name=".TestActivityAgm"
+            android:exported="true" />
+        <activity
+            android:name=".TestActivitySwipe"
             android:exported="true" />
         <activity
             android:name=".TestActivity"

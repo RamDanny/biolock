@@ -1,10 +1,10 @@
 package com.example.biolock;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.view.View;
 import android.os.Bundle;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,13 +14,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void trainButtonHome(View view) {
-        Intent i = new Intent(MainActivity.this, TrainActivity.class);
+    public void trainButtonAgm(View view) {
+        Intent i = new Intent(MainActivity.this, TrainActivityAgm.class);
         startActivity(i);
     }
 
-    public void testButtonHome(View view) {
-        Intent i = new Intent(MainActivity.this, TestActivity.class);
+    public void trainButtonSwipe (View view) {
+        Intent i = new Intent(MainActivity.this, TrainActivitySwipe.class);
         startActivity(i);
     }
+    public void testbuttonagm(View view) {
+        Intent i = new Intent(MainActivity.this, TestActivityAgm.class);
+        startActivity(i);
+    }
+
+    public void testbuttonswipe (View view) {
+        Intent i = new Intent(MainActivity.this, TestActivitySwipe.class);
+        startActivity(i);
+    }
+
+
+
 }

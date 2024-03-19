@@ -17,44 +17,45 @@
 
     <ScrollView
         android:id="@+id/dataLogged"
-        android:layout_width="wrap_content"
-        android:layout_height="600dp"
+        android:layout_width="355dp"
+        android:layout_height="434dp"
         android:layout_below="@id/dataTitle"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp">
+
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true">
+            android:layout_centerHorizontal="true"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/dataAcc"
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/dataGyro"
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/dataMag"
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/dataSwipe"
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
 
         </LinearLayout>
     </ScrollView>

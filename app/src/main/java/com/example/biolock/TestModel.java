@@ -1,34 +1,29 @@
 package com.example.biolock;
 
 import android.app.Activity;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 
-import libsvm.*;
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
 
-public class TestModel extends Activity {
+public class
+TestModel extends Activity {
     private TextView testOutput;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
