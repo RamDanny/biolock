@@ -65,7 +65,7 @@ TestModel extends Activity {
                 fileCount++;
                 writeFileInternal(getApplicationContext(), sensor+"("+fileCount+")_test.csv", filerows[i]+"\n", false);
             }
-            else if (diffInSecs(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 6) {
+            else if (diffInSecs(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 3) {
                 writeFileInternal(getApplicationContext(), sensor+"("+fileCount+")_test.csv", filerows[i]+"\n", true);
             }
             else {

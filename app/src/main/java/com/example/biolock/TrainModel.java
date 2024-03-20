@@ -32,6 +32,8 @@ public class TrainModel extends Activity {
 
         trainText = findViewById(R.id.trainText);
 
+        //overrideFromDownloads(getApplicationContext());
+
         trainModel(getApplicationContext(), "accdata");
         trainModel(getApplicationContext(), "gyrodata");
         trainModel(getApplicationContext(), "magdata");
@@ -53,7 +55,7 @@ public class TrainModel extends Activity {
                 fileCount++;
                 writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", false);
             }
-            else if (diffInSecs(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 6) {
+            else if (diffInSecs(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 3) {
                 writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", true);
             }
             else {
@@ -361,7 +363,7 @@ public class TrainModel extends Activity {
         param.kernel_type = svm_parameter.RBF;
         param.C = 1.0; // Penalty parameter C of the error term
         param.gamma = 0.000025;
-        //param.nr_weight = 0;
+        param.nr_weight = 0;
         //param.nu = 0.1;
         //param.degree = 3;
         //param.coef0 = 4.0;
@@ -479,6 +481,43 @@ public class TrainModel extends Activity {
         catch (IOException e) {
             e.printStackTrace();
             Log.e("InternalToDownload", "Error exporting file '" + csvFile.getAbsolutePath() + "' to Downloads" + e.getMessage());
+        }
+    }
+
+    public void overrideFromDownloads(Context context) {
+        String[] names = {"accdata.csv", "gyrodata.csv", "magdata.csv", "swipedata.csv", "accdata_calc.csv", "gyrodata_calc.csv", "magdata_calc.csv", "swipedata_calc.csv"};
+        for (String name: names) {
+            String data = null;
+            File exportDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!exportDir.exists()) {
+                exportDir.mkdirs();
+            }
+            File csvFile = new File(exportDir, name);
+            if (csvFile.exists()) {
+                FileInputStream fis = null;
+                StringBuilder stringBuilder = new StringBuilder();
+                try {
+                    fis = new FileInputStream(csvFile);
+                    int character;
+                    while ((character = fis.read()) != -1) {
+                        stringBuilder.append((char) character);
+                    }
+                    data = stringBuilder.toString();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    data = null;
+                } finally {
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                writeFileInternal(context, name, data, false);
+                Log.d("DownloadToInternal", "Imported file '" + name + "' from Downloads");
+            }
         }
     }
 
