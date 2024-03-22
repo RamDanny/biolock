@@ -38,11 +38,11 @@ TestModel extends Activity {
         double swipe_accuracy = testSwipe(getApplicationContext());
         System.out.println("Acc = " + String.valueOf(acc_accuracy));
         System.out.println("Gyro = " + String.valueOf(gyro_accuracy));
-        System.out.println("Mag = " + String.valueOf(mag_accuracy));
+        //System.out.println("Mag = " + String.valueOf(mag_accuracy));
         System.out.println("Swipe = " + String.valueOf(swipe_accuracy));
         Log.d("TestingResult", "Testing successful!");
 
-        if (acc_accuracy > 70 && gyro_accuracy > 70 && mag_accuracy > 70 && swipe_accuracy > 70) {
+        if (acc_accuracy > 70 && gyro_accuracy > 70 /*&& mag_accuracy > 70*/ && swipe_accuracy > 70) {
             testOutput.setText("VALID");
             testOutput.setTextColor(Color.GREEN);
         }

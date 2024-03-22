@@ -36,18 +36,14 @@ public class TrainModel extends Activity {
 
         trainText = findViewById(R.id.trainText);
 
+        overrideFromDownloads(getApplicationContext());
         runTrainingTasks();
     }
 
     private void runTrainingTasks() {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        latch = new CountDownLatch(4);
 
-        /*executorService.submit(() -> {
-            overrideFromDownloads(getApplicationContext());
-            latch.countDown();
-            runOnUiThread(this::onTrainingTaskCompleted);
-        });*/
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        latch = new CountDownLatch(3);
 
         executorService.submit(() -> {
             trainModel(getApplicationContext(), "accdata");
@@ -61,11 +57,11 @@ public class TrainModel extends Activity {
             runOnUiThread(this::onTrainingTaskCompleted);
         });
 
-        executorService.submit(() -> {
+        /*executorService.submit(() -> {
             trainModel(getApplicationContext(), "magdata");
             latch.countDown();
             runOnUiThread(this::onTrainingTaskCompleted);
-        });
+        });*/
 
         executorService.submit(() -> {
             trainSwipe(getApplicationContext());
@@ -82,7 +78,7 @@ public class TrainModel extends Activity {
         // For simplicity, let's assume we directly update the UI once each task completes
         long ct = latch.getCount();
         if (ct > 0) {
-            trainText.setText("Training...\nPlease wait...\n" + (5 - ct) + "/5");
+            trainText.setText("Training...\nPlease wait...\n" + (3 - ct) + "/3");
         }
         else {
             trainText.setText("Training Completed!");
@@ -227,8 +223,8 @@ public class TrainModel extends Activity {
         param.svm_type = svm_parameter.ONE_CLASS;
         param.kernel_type = svm_parameter.RBF;
         param.C = 1.56; // Penalty parameter C of the error term
-        param.gamma = 0.000025;
-        param.nu = 0.1;
+        param.gamma = 0.0000001;
+        param.nu = 0.01;
         //param.degree = 3;
         //param.coef0 = 4.0;
         System.out.println("Gamma = " + param.gamma);
