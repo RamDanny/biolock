@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -16,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.concurrent.*;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -25,6 +28,7 @@ import libsvm.svm_problem;
 
 public class TrainModel extends Activity {
     private TextView trainText;
+    private CountDownLatch latch;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,14 +36,58 @@ public class TrainModel extends Activity {
 
         trainText = findViewById(R.id.trainText);
 
-        //overrideFromDownloads(getApplicationContext());
+        runTrainingTasks();
+    }
 
-        trainModel(getApplicationContext(), "accdata");
-        trainModel(getApplicationContext(), "gyrodata");
-        trainModel(getApplicationContext(), "magdata");
-        trainSwipe(getApplicationContext());
-        trainText.setText("Training Completed!");
-        Log.d("TrainingResult", "Training successful!");
+    private void runTrainingTasks() {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        latch = new CountDownLatch(4);
+
+        /*executorService.submit(() -> {
+            overrideFromDownloads(getApplicationContext());
+            latch.countDown();
+            runOnUiThread(this::onTrainingTaskCompleted);
+        });*/
+
+        executorService.submit(() -> {
+            trainModel(getApplicationContext(), "accdata");
+            latch.countDown();
+            runOnUiThread(this::onTrainingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            trainModel(getApplicationContext(), "gyrodata");
+            latch.countDown();
+            runOnUiThread(this::onTrainingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            trainModel(getApplicationContext(), "magdata");
+            latch.countDown();
+            runOnUiThread(this::onTrainingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            trainSwipe(getApplicationContext());
+            latch.countDown();
+            runOnUiThread(this::onTrainingTaskCompleted);
+        });
+
+        executorService.shutdown();
+    }
+
+    private void onTrainingTaskCompleted() {
+        // Update UI or perform any action needed after a training task completes
+        // You can check if all tasks are completed here and perform final UI updates
+        // For simplicity, let's assume we directly update the UI once each task completes
+        long ct = latch.getCount();
+        if (ct > 0) {
+            trainText.setText("Training...\nPlease wait...\n" + (5 - ct) + "/5");
+        }
+        else {
+            trainText.setText("Training Completed!");
+            Log.d("TrainingResult", "Training successful!");
+        }
     }
 
     public void trainModel(Context context, String sensor) {
@@ -183,7 +231,7 @@ public class TrainModel extends Activity {
         param.nu = 0.1;
         //param.degree = 3;
         //param.coef0 = 4.0;
-        System.out.println("Gamma = " + String.valueOf(param.gamma));
+        System.out.println("Gamma = " + param.gamma);
 
         // Train the model
         svm_model model = svm.svm_train(prob, param);
@@ -347,7 +395,7 @@ public class TrainModel extends Activity {
                 trainingData[i][j].value = Double.parseDouble(parts[j+1]);
             }
             System.out.println();
-            labelsArray[i] = parts[0].charAt(0);
+            labelsArray[i] = 1;//parts[0].charAt(0);
             i++;
         }
 
@@ -359,12 +407,12 @@ public class TrainModel extends Activity {
 
         // Set SVM parameters
         svm_parameter param = new svm_parameter();
-        param.svm_type = svm_parameter.C_SVC;
+        param.svm_type = svm_parameter.ONE_CLASS;
         param.kernel_type = svm_parameter.RBF;
-        param.C = 1.0; // Penalty parameter C of the error term
-        param.gamma = 0.000025;
-        param.nr_weight = 0;
-        //param.nu = 0.1;
+        //param.C = 1.56; // Penalty parameter C of the error term
+        param.gamma = 0.0000001;
+        //param.nr_weight = 0;
+        param.nu = 0.01;
         //param.degree = 3;
         //param.coef0 = 4.0;
         System.out.println("Gamma = " + String.valueOf(param.gamma));

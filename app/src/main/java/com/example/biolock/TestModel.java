@@ -343,10 +343,10 @@ TestModel extends Activity {
         int rows = testrows.length;
         int cols = testrows[0].split(",").length;
         svm_node[][] testdata = new svm_node[rows][cols-1];
-        String[] labelsarray = new String[rows];
+        //String[] labelsarray = new String[rows];
         for (int x = 0; x < rows; x++) {
             String[] testline = testrows[x].split(",");
-            labelsarray[x] = testline[0];
+            //labelsarray[x] = testline[0];
             for (int y = 0; y < cols-1; y++) {
                 testdata[x][y] = new svm_node();
                 testdata[x][y].index = y + 1;
@@ -360,7 +360,7 @@ TestModel extends Activity {
         int total = rows, correct = 0;
         for (int k = 0; k < rows; k++) {
             val = svm.svm_predict(model, testdata[k]);
-            if (val == labelsarray[k].charAt(0)) correct++;
+            if (val == 1/*labelsarray[k].charAt(0)*/) correct++;
             System.out.println("Prediction " + k + " = " + String.valueOf(val));
         }
         double accuracy = (correct * 100.0) / total;
