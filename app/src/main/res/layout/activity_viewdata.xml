@@ -85,8 +85,19 @@
         android:layout_height="wrap_content"
         android:text="Export"
         android:layout_below="@id/backButtonView"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="100dp"
         android:onClick="exportDb"/>
+
+    <Button
+        android:id="@+id/deleteRecords"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        android:layout_below="@id/backButtonView"
+        android:layout_toRightOf="@id/exportButton"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="20dp"
+        android:onClick="deleteRecords"/>
 
 </RelativeLayout>

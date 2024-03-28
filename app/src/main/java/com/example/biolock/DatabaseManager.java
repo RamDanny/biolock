@@ -14,20 +14,20 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockReals17.db",null,1);
+        super(context,"BiolockReals18.db",null,1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE accdata(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE gyrodata(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE magdata(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE accdata(id INTEGER PRIMARY KEY AUTOINCREMENT, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE gyrodata(id INTEGER PRIMARY KEY AUTOINCREMENT, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE magdata(id INTEGER PRIMARY KEY AUTOINCREMENT, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
 
-        db.execSQL("CREATE TABLE accdata_test(id INT PRIMARY KEY, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE gyrodata_test(id INT PRIMARY KEY, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE magdata_test(id INT PRIMARY KEY, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata_test(id INT PRIMARY KEY, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE accdata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE gyrodata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE magdata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
     }
 
     @Override
@@ -39,12 +39,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
-        Random rand = new Random();
-        int rand_int = rand.nextInt(1000000000);
+        //Random rand = new Random();
+        //int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("id", rand_int);
+        //cv.put("id", rand_int);
         cv.put("acc_x", accx);
         cv.put("acc_y", accy);
         cv.put("acc_z", accz);
@@ -65,12 +65,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
-        Random rand = new Random();
-        int rand_int = rand.nextInt(1000000000);
+        //Random rand = new Random();
+        //int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("id", rand_int);
+        //cv.put("id", rand_int);
         cv.put("gyro_x", gyrox);
         cv.put("gyro_y", gyroy);
         cv.put("gyro_z", gyroz);
@@ -91,12 +91,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
         LocalDateTime dateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String dt = dateTime.format(formatter);
-        Random rand = new Random();
-        int rand_int = rand.nextInt(1000000000);
+        //Random rand = new Random();
+        //int rand_int = rand.nextInt(1000000000);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("id", rand_int);
+        //cv.put("id", rand_int);
         cv.put("mag_x", magx);
         cv.put("mag_y", magy);
         cv.put("mag_z", magz);
@@ -135,13 +135,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
             LocalDateTime dateTime = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String dt = dateTime.format(formatter);
-            Random rand = new Random();
+            //Random rand = new Random();
             for (int i = 0; i < lines.size(); i++) {
                 float[] coords = lines.get(i);
                 float pressure = pressures.get(i);
                 float[] velocity = velocities.get(i);
                 float area = touchareas.get(i);
-                cv.put("id", rand.nextInt(1000000000));
+                //cv.put("id", rand.nextInt(1000000000));
                 cv.put("start_x", String.valueOf(coords[0]));
                 cv.put("start_y", String.valueOf(coords[1]));
                 cv.put("end_x", String.valueOf(coords[2]));
@@ -258,6 +258,33 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
 
         return count;
+    }
+
+    public boolean truncateDb(boolean train_mode) {
+        SQLiteDatabase db = getWritableDatabase();
+        if (train_mode) {
+            db.delete("accdata", null, null);
+            db.delete("gyrodata", null, null);
+            db.delete("magdata", null, null);
+            db.delete("swipedata", null, null);
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'accdata'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'gyrodata'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'magdata'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'swipedata'");
+            db.close();
+        }
+        else {
+            db.delete("accdata_test", null, null);
+            db.delete("gyrodata_test", null, null);
+            db.delete("magdata_test", null, null);
+            db.delete("swipedata_test", null, null);
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'accdata_test'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'gyrodata_test'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'magdata_test'");
+            db.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'swipedata_test'");
+            db.close();
+        }
+        return true;
     }
 
 }

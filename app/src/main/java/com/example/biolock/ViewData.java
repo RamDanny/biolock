@@ -30,7 +30,7 @@ public class ViewData extends Activity {
         dataMag = findViewById(R.id.dataMag);
         dataSwipe = findViewById(R.id.dataSwipe);
         countDb = findViewById(R.id.countDb);
-        System.out.println("TRAIN MDOE IS: "+train_mode);
+        System.out.println("TRAIN MODE IS: "+train_mode);
         DatabaseManager db = new DatabaseManager(this);
         Cursor acc = db.get_acc(train_mode);
         Cursor gyro = db.get_gyro(train_mode);
@@ -127,9 +127,15 @@ public class ViewData extends Activity {
         SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(dbName, Context.MODE_PRIVATE, null);
         for (String table : tables) {
             exportTableToCsv(db, table);
-
         }
         db.close();
+    }
+
+    public void deleteRecords(View view) {
+        DatabaseManager db = new DatabaseManager(getApplicationContext());
+        Boolean truncate = db.truncateDb(train_mode);
+        Intent i = new Intent(ViewData.this, MainActivity.class);
+        startActivity(i);
     }
 
     public static void writeFileInternal(Context context, String filePath, String data, boolean append) {
