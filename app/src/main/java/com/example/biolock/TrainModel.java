@@ -36,14 +36,13 @@ public class TrainModel extends Activity {
 
         trainText = findViewById(R.id.trainText);
 
-        overrideFromDownloads(getApplicationContext());
+        //overrideFromDownloads(getApplicationContext());
         runTrainingTasks();
     }
 
     private void runTrainingTasks() {
-
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        latch = new CountDownLatch(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        latch = new CountDownLatch(4);
 
         executorService.submit(() -> {
             trainModel(getApplicationContext(), "accdata");
@@ -57,11 +56,11 @@ public class TrainModel extends Activity {
             runOnUiThread(this::onTrainingTaskCompleted);
         });
 
-        /*executorService.submit(() -> {
+        executorService.submit(() -> {
             trainModel(getApplicationContext(), "magdata");
             latch.countDown();
             runOnUiThread(this::onTrainingTaskCompleted);
-        });*/
+        });
 
         executorService.submit(() -> {
             trainSwipe(getApplicationContext());
@@ -73,12 +72,9 @@ public class TrainModel extends Activity {
     }
 
     private void onTrainingTaskCompleted() {
-        // Update UI or perform any action needed after a training task completes
-        // You can check if all tasks are completed here and perform final UI updates
-        // For simplicity, let's assume we directly update the UI once each task completes
         long ct = latch.getCount();
         if (ct > 0) {
-            trainText.setText("Training...\nPlease wait...\n" + (3 - ct) + "/3");
+            trainText.setText("Training...\nPlease wait...\n" + (4 - ct) + "/4");
         }
         else {
             trainText.setText("Training Completed!");
@@ -109,6 +105,7 @@ public class TrainModel extends Activity {
             //System.out.println(sensor+"("+fileCount+") = " + filerows[i]);
         }
         System.out.println(sensor+": "+fileCount+" files written");
+        runOnUiThread(this::onTrainingTaskCompleted);
 
         // Generate feature dataset using gesture files
         String exportFile = "";
@@ -182,6 +179,7 @@ public class TrainModel extends Activity {
             //System.out.println(calculatedValues);
         }
         System.out.println(sensor+"_calc dataset created");
+        runOnUiThread(this::onTrainingTaskCompleted);
 
         // Export to external filesystem
         copyToDownloads(context, sensor+".csv");
@@ -271,6 +269,7 @@ public class TrainModel extends Activity {
             //System.out.println(sensor+"("+fileCount+") = " + filerows[i]);
         }
         System.out.println(sensor+": "+fileCount+" files written");
+        runOnUiThread(this::onTrainingTaskCompleted);
 
         // Generate feature dataset using gesture files
         String exportFile = "";
@@ -365,6 +364,7 @@ public class TrainModel extends Activity {
         }
 
         System.out.println(sensor+"_calc dataset created");
+        runOnUiThread(this::onTrainingTaskCompleted);
 
         // Export to external filesystem
         copyToDownloads(context, sensor+".csv");

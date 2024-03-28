@@ -17,6 +17,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -24,31 +28,75 @@ import libsvm.svm_node;
 
 public class
 TestModel extends Activity {
-    private TextView testOutput;
+    private TextView testOutput, testText;
+    private CountDownLatch latch;
+    private AtomicReference<Double> acc_accuracy, gyro_accuracy, mag_accuracy, swipe_accuracy;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_testmodel);
 
+        testText = findViewById(R.id.testText);
         testOutput = findViewById(R.id.testOutput);
 
-        double acc_accuracy = testModel(getApplicationContext(), "accdata");
-        double gyro_accuracy = testModel(getApplicationContext(), "gyrodata");
-        double mag_accuracy = testModel(getApplicationContext(), "magdata");
-        double swipe_accuracy = testSwipe(getApplicationContext());
-        System.out.println("Acc = " + String.valueOf(acc_accuracy));
-        System.out.println("Gyro = " + String.valueOf(gyro_accuracy));
-        //System.out.println("Mag = " + String.valueOf(mag_accuracy));
-        System.out.println("Swipe = " + String.valueOf(swipe_accuracy));
-        Log.d("TestingResult", "Testing successful!");
+        runTestingTasks();
+    }
 
-        if (acc_accuracy > 70 && gyro_accuracy > 70 /*&& mag_accuracy > 70*/ && swipe_accuracy > 70) {
-            testOutput.setText("VALID");
-            testOutput.setTextColor(Color.GREEN);
+    public void runTestingTasks() {
+        acc_accuracy = new AtomicReference<>((double) 0);
+        gyro_accuracy = new AtomicReference<>((double) 0);
+        mag_accuracy = new AtomicReference<>((double) 0);
+        swipe_accuracy = new AtomicReference<>((double) 0);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        latch = new CountDownLatch(4);
+
+        executorService.submit(() -> {
+            acc_accuracy.set(testModel(getApplicationContext(), "accdata"));
+            System.out.println("Acc = " + acc_accuracy.get());
+            latch.countDown();
+            runOnUiThread(this::onTestingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            gyro_accuracy.set(testModel(getApplicationContext(), "gyrodata"));
+            System.out.println("Gyro = " + gyro_accuracy.get());
+            latch.countDown();
+            runOnUiThread(this::onTestingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            mag_accuracy.set(testModel(getApplicationContext(), "magdata"));
+            System.out.println("Mag = " + mag_accuracy.get());
+            latch.countDown();
+            runOnUiThread(this::onTestingTaskCompleted);
+        });
+
+        executorService.submit(() -> {
+            swipe_accuracy.set(testSwipe(getApplicationContext()));
+            System.out.println("Swipe = " + swipe_accuracy.get());
+            latch.countDown();
+            runOnUiThread(this::onTestingTaskCompleted);
+        });
+
+        executorService.shutdown();
+    }
+
+    private void onTestingTaskCompleted() {
+        long ct = latch.getCount();
+        if (ct > 0) {
+            testText.setText("The user is :");
         }
         else {
-            testOutput.setText("NOT VALID");
-            testOutput.setTextColor(Color.RED);
+            Log.d("TestingResult", "Testing successful!");
+            if (acc_accuracy.get() > 70 && gyro_accuracy.get() > 70 && mag_accuracy.get() > 70 && swipe_accuracy.get() > 70) {
+                testOutput.setText("VALID");
+                testOutput.setTextColor(Color.GREEN);
+            }
+            else {
+                testOutput.setText("NOT VALID");
+                testOutput.setTextColor(Color.RED);
+            }
         }
     }
 
@@ -75,6 +123,7 @@ TestModel extends Activity {
             //System.out.println(sensor+"("+fileCount+") = " + filerows[i]);
         }
         System.out.println(sensor+"_test: "+fileCount+" files written");
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Generate feature dataset using gesture files
         String exportFile = "";
@@ -148,6 +197,7 @@ TestModel extends Activity {
             //System.out.println(calculatedValues);
         }
         System.out.println(sensor+"_test_calc dataset created");
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Export to external filesystem
         copyToDownloads(context, sensor+"_test.csv");
@@ -167,6 +217,7 @@ TestModel extends Activity {
         catch (IOException e) {
             e.printStackTrace();
         }
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Testing
         // Prepare test data
@@ -222,6 +273,7 @@ TestModel extends Activity {
             //System.out.println(sensor+"("+fileCount+") = " + filerows[i]);
         }
         System.out.println(sensor+"_test: "+fileCount+" files written");
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Generate feature dataset using gesture files
         String exportFile = "";
@@ -316,6 +368,7 @@ TestModel extends Activity {
         }
 
         System.out.println(sensor+"_test_calc dataset created");
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Export to external filesystem
         copyToDownloads(context, sensor+"_test.csv");
@@ -335,6 +388,7 @@ TestModel extends Activity {
         catch (IOException e) {
             e.printStackTrace();
         }
+        runOnUiThread(this::onTestingTaskCompleted);
 
         // Testing
         // Prepare test data
