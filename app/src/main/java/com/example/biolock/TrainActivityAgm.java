@@ -171,7 +171,7 @@ public class TrainActivityAgm extends Activity implements SensorEventListener{
     }
 
     public void trainButton(View view) {
-        Intent i = new Intent(TrainActivityAgm.this, TrainModel.class);
-        startActivity(i);
+        //Intent i = new Intent(TrainActivityAgm.this, TrainModel.class);
+        //startActivity(i);
     }
 }

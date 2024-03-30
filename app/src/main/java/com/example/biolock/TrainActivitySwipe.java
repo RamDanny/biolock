@@ -34,6 +34,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
     private ArrayList<Float> pressures;
     private ArrayList<float[]> velocities;
     private ArrayList<Float> touchareas;
+    private ArrayList accmeta, gyrometa, magmeta, swipemeta;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +43,28 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
         userPrompt = findViewById(R.id.userPromptTrain);
 
-        randPrompt();
+        accmeta = new ArrayList<>(3);
+        gyrometa = new ArrayList<>(3);
+        magmeta = new ArrayList<>(3);
+        swipemeta = new ArrayList<>(3);
 
+        Intent i = getIntent();
+        if (i != null) {
+            accmeta.add(i.getIntExtra("accmeta_filecount", 0));
+            accmeta.add(i.getIntExtra("accmeta_numfeatures", 0));
+            accmeta.add(i.getStringExtra("accmeta_exportfile"));
+            gyrometa.add(i.getIntExtra("gyrometa_filecount", 0));
+            gyrometa.add(i.getIntExtra("gyrometa_numfeatures", 0));
+            gyrometa.add(i.getStringExtra("gyrometa_exportfile"));
+            magmeta.add(i.getIntExtra("magmeta_filecount", 0));
+            magmeta.add(i.getIntExtra("magmeta_numfeatures", 0));
+            magmeta.add(i.getStringExtra("magmeta_exportfile"));
+            swipemeta.add(i.getIntExtra("swipemeta_filecount", 0));
+            swipemeta.add(i.getIntExtra("swipemeta_numfeatures", 0));
+            swipemeta.add(i.getStringExtra("swipemeta_exportfile"));
+        }
+
+        randPrompt();
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
         pressures = new ArrayList<>();
@@ -55,7 +76,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
         findViewById(android.R.id.content).setOnTouchListener(this);
 
-           }
+    }
 
     @Override
     protected void onResume() {
@@ -200,6 +221,22 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
     public void trainButton(View view) {
         Intent i = new Intent(TrainActivitySwipe.this, TrainModel.class);
+        // acc meta
+        i.putExtra("accmeta_filecount", (int) accmeta.get(0));
+        i.putExtra("accmeta_numfeatures", (int) accmeta.get(1));
+        i.putExtra("accmeta_exportfile", (String) accmeta.get(2));
+        // gyro meta
+        i.putExtra("gyrometa_filecount", (int) gyrometa.get(0));
+        i.putExtra("gyrometa_numfeatures", (int) gyrometa.get(1));
+        i.putExtra("gyrometa_exportfile", (String) gyrometa.get(2));
+        // mag meta
+        i.putExtra("magmeta_filecount", (int) magmeta.get(0));
+        i.putExtra("magmeta_numfeatures", (int) magmeta.get(1));
+        i.putExtra("magmeta_exportfile", (String) magmeta.get(2));
+        // swipe meta
+        i.putExtra("swipemeta_filecount", (int) swipemeta.get(0));
+        i.putExtra("swipemeta_numfeatures", (int) swipemeta.get(1));
+        i.putExtra("swipemeta_exportfile", (String) swipemeta.get(2));
         startActivity(i);
     }
 }

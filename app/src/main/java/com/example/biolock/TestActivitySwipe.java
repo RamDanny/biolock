@@ -30,6 +30,7 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
     private ArrayList<Float> pressures;
     private ArrayList<float[]> velocities;
     private ArrayList<Float> touchareas;
+    private ArrayList accmeta_test, gyrometa_test, magmeta_test, swipemeta_test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +38,26 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
         setContentView(R.layout.activity_test);
 
         userPrompt = findViewById(R.id.userPromptTest);
+        accmeta_test = new ArrayList<>(3);
+        gyrometa_test = new ArrayList<>(3);
+        magmeta_test = new ArrayList<>(3);
+        swipemeta_test = new ArrayList<>(3);
+
+        Intent i = getIntent();
+        if (i != null) {
+            accmeta_test.add(i.getIntExtra("accmeta_test_filecount", 0));
+            accmeta_test.add(i.getIntExtra("accmeta_test_numfeatures", 0));
+            accmeta_test.add(i.getStringExtra("accmeta_test_exportfile"));
+            gyrometa_test.add(i.getIntExtra("gyrometa_test_filecount", 0));
+            gyrometa_test.add(i.getIntExtra("gyrometa_test_numfeatures", 0));
+            gyrometa_test.add(i.getStringExtra("gyrometa_test_exportfile"));
+            magmeta_test.add(i.getIntExtra("magmeta_test_filecount", 0));
+            magmeta_test.add(i.getIntExtra("magmeta_test_numfeatures", 0));
+            magmeta_test.add(i.getStringExtra("magmeta_test_exportfile"));
+            swipemeta_test.add(i.getIntExtra("swipemeta_test_filecount", 0));
+            swipemeta_test.add(i.getIntExtra("swipemeta_test_numfeatures", 0));
+            swipemeta_test.add(i.getStringExtra("swipemeta_test_exportfile"));
+        }
 
         randPrompt();
 
@@ -186,6 +207,22 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
 
     public void testButton(View view) {
         Intent i = new Intent(TestActivitySwipe.this, TestModel.class);
+        // acc meta
+        i.putExtra("accmeta_test_filecount", (int) accmeta_test.get(0));
+        i.putExtra("accmeta_test_numfeatures", (int) accmeta_test.get(1));
+        i.putExtra("accmeta_test_exportfile", (String) accmeta_test.get(2));
+        // gyro meta
+        i.putExtra("gyrometa_test_filecount", (int) gyrometa_test.get(0));
+        i.putExtra("gyrometa_test_numfeatures", (int) gyrometa_test.get(1));
+        i.putExtra("gyrometa_test_exportfile", (String) gyrometa_test.get(2));
+        // mag meta
+        i.putExtra("magmeta_test_filecount", (int) magmeta_test.get(0));
+        i.putExtra("magmeta_test_numfeatures", (int) magmeta_test.get(1));
+        i.putExtra("magmeta_test_exportfile", (String) magmeta_test.get(2));
+        // swipe meta
+        i.putExtra("swipemeta_test_filecount", (int) swipemeta_test.get(0));
+        i.putExtra("swipemeta_test_numfeatures", (int) swipemeta_test.get(1));
+        i.putExtra("swipemeta_test_exportfile", (String) swipemeta_test.get(2));
         startActivity(i);
     }
 }
