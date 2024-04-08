@@ -24,6 +24,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.CSVLoader;
+
 public class ViewData extends Activity {
     private TextView dataAcc, dataGyro, dataMag, dataSwipe, countDb, exportProgress;
     private boolean train_mode;
@@ -50,6 +54,7 @@ public class ViewData extends Activity {
         Cursor gyro = db.get_gyro(train_mode);
         Cursor mag = db.get_mag(train_mode);
         Cursor swipe = db.get_swipe(train_mode);
+        runOnUiThread(this::onViewData);
         while (acc.moveToNext()) {
             String temp = dataAcc.getText().toString();
             String id = String.valueOf(acc.getInt(0));
@@ -59,6 +64,7 @@ public class ViewData extends Activity {
             String dt1 = acc.getString(4);
             dataAcc.setText(temp + x + " " + y + " " + z + " " + dt1 + "\n");
         }
+        runOnUiThread(this::onViewData);
         while (gyro.moveToNext()) {
             String temp = dataGyro.getText().toString();
             String id = String.valueOf(gyro.getInt(0));
@@ -68,6 +74,7 @@ public class ViewData extends Activity {
             String dt2 = gyro.getString(4);
             dataGyro.setText(temp + gx + " " + gy + " " + gz + " " + dt2 + "\n");
         }
+        runOnUiThread(this::onViewData);
         while (mag.moveToNext()) {
             String temp = dataMag.getText().toString();
             String id = String.valueOf(mag.getInt(0));
@@ -77,6 +84,7 @@ public class ViewData extends Activity {
             String dt3 = mag.getString(4);
             dataMag.setText(temp + mx + " " + my + " " + mz + " " + dt3 + "\n");
         }
+        runOnUiThread(this::onViewData);
         while (swipe.moveToNext()) {
             String temp = dataSwipe.getText().toString();
             String id = String.valueOf(swipe.getInt(0));
@@ -88,6 +96,7 @@ public class ViewData extends Activity {
             int gset = swipe.getInt(6);
             dataSwipe.setText(temp + letter + " | " + gset + " | " + startx + " " + starty + "\n");
         }
+        runOnUiThread(this::onViewData);
         countDb.setText(String.valueOf(db.getRowCount(train_mode)));
         latch = new CountDownLatch(4);
         accmeta = new ArrayList<>(3);
@@ -98,6 +107,10 @@ public class ViewData extends Activity {
         gyrometa_test = new ArrayList<>(3);
         magmeta_test = new ArrayList<>(3);
         swipemeta_test = new ArrayList<>(3);
+    }
+
+    private void onViewData() {
+        exportProgress.setText("");
     }
 
     public void backHome(View view) {

@@ -38,4 +38,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     implementation(files("libs/libsvm.jar"))
+    implementation(files("libs/weka.jar"))
 }

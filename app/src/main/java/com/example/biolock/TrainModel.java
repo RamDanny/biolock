@@ -4,22 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -28,7 +22,7 @@ import libsvm.svm_parameter;
 import libsvm.svm_problem;
 
 public class TrainModel extends Activity {
-    private TextView trainText;
+    private TextView trainText, trainText2;
     private CountDownLatch latch;
     private ArrayList accmeta, gyrometa, magmeta, swipemeta;
     @Override
@@ -37,6 +31,7 @@ public class TrainModel extends Activity {
         setContentView(R.layout.activity_trainmodel);
 
         trainText = findViewById(R.id.trainText);
+        trainText2 = findViewById(R.id.trainText2);
 
         accmeta = new ArrayList<>(3);
         gyrometa = new ArrayList<>(3);
@@ -58,6 +53,8 @@ public class TrainModel extends Activity {
         swipemeta.add(i.getStringExtra("swipemeta_exportfile"));
 
         //overrideFromDownloads(getApplicationContext());
+        //ArrayList params = gridSearch();
+        //trainText2.setText("Gamma = " + (double)params.get(0) + "  Nu = " + (double)params.get(1));
         runTrainingTasks();
     }
 
@@ -224,9 +221,9 @@ public class TrainModel extends Activity {
         param.svm_type = svm_parameter.ONE_CLASS;
         param.kernel_type = svm_parameter.RBF;
         //param.C = 1.56; // Penalty parameter C of the error term
-        param.gamma = 0.0000001;
+        param.gamma = 0.00000001;
         //param.nr_weight = 0;
-        param.nu = 0.01;
+        param.nu = 0.005;
         //param.degree = 3;
         //param.coef0 = 4.0;
         System.out.println("Gamma = " + String.valueOf(param.gamma));
