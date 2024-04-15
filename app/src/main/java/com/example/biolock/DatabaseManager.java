@@ -14,20 +14,20 @@ import java.util.Random;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     public DatabaseManager(Context context){
-        super(context,"BiolockReals20.db",null,1);
+        super(context,"BiolockReals21.db",null,1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE accdata(id INTEGER PRIMARY KEY AUTOINCREMENT, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE gyrodata(id INTEGER PRIMARY KEY AUTOINCREMENT, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, majoraxis TEXT, minoraxis TEXT, letter TEXT, gset INT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE magdata(id INTEGER PRIMARY KEY AUTOINCREMENT, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
 
         db.execSQL("CREATE TABLE accdata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, acc_x TEXT, acc_y TEXT, acc_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE gyrodata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, gyro_x TEXT, gyro_y TEXT, gyro_z TEXT, timestamp DATETIME)");
         db.execSQL("CREATE TABLE magdata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, mag_x TEXT, mag_y TEXT, mag_z TEXT, timestamp DATETIME)");
-        db.execSQL("CREATE TABLE swipedata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, toucharea TEXT, letter TEXT, gset INT, timestamp DATETIME)");
+        db.execSQL("CREATE TABLE swipedata_test(id INTEGER PRIMARY KEY AUTOINCREMENT, start_x TEXT, start_y TEXT, end_x TEXT, end_y TEXT, vel_x TEXT, vel_y TEXT, pressure TEXT, majoraxis TEXT, minoraxis TEXT, letter TEXT, gset INT, timestamp DATETIME)");
     }
 
     @Override
@@ -113,7 +113,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<Float> touchareas, String letter, boolean train_mode) {
+    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<float[]> axes, String letter, boolean train_mode) {
         // get gesture id
         String countQuery = "SELECT COALESCE(MAX(gset), 0) FROM swipedata WHERE letter = '" + letter + "'";
         SQLiteDatabase db = null;
@@ -140,7 +140,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 float[] coords = lines.get(i);
                 float pressure = pressures.get(i);
                 float[] velocity = velocities.get(i);
-                float area = touchareas.get(i);
+                float[] axis = axes.get(i);
                 //cv.put("id", rand.nextInt(1000000000));
                 cv.put("start_x", String.valueOf(coords[0]));
                 cv.put("start_y", String.valueOf(coords[1]));
@@ -149,7 +149,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 cv.put("vel_x", String.valueOf(velocity[0]));
                 cv.put("vel_y", String.valueOf(velocity[1]));
                 cv.put("pressure", String.valueOf(pressure));
-                cv.put("toucharea", String.valueOf(area));
+                cv.put("majoraxis", String.valueOf(axis[0]));
+                cv.put("minoraxis", String.valueOf(axis[1]));
                 cv.put("letter", letter);
                 cv.put("gset", gset);
                 cv.put("timestamp", dt);

@@ -33,7 +33,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
     private VelocityTracker velocityTracker;
     private ArrayList<Float> pressures;
     private ArrayList<float[]> velocities;
-    private ArrayList<Float> touchareas;
+    private ArrayList<float[]> axes;
     private ArrayList accmeta, gyrometa, magmeta, swipemeta;
 
     @Override
@@ -69,7 +69,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
         lines = new ArrayList<float[]>();
         pressures = new ArrayList<>();
         velocities = new ArrayList<>();
-        touchareas = new ArrayList<>();
+        axes = new ArrayList<float[]>();
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -124,8 +124,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
             velocityTracker.addMovement(event);
             pressures.clear();
             float pressureDown = event.getPressure();
-            touchareas.clear();
-            float toucharea = event.getSize();
+            axes.clear();
         }
         else if (event.getAction() == MotionEvent.ACTION_MOVE && touched) {
             float[] point = {event.getX(), event.getY()};
@@ -138,8 +137,10 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
             float velocityY = velocityTracker.getYVelocity();
             float[] vels = {velocityX, velocityY};
             velocities.add(vels);
-            float toucharea = event.getSize();
-            touchareas.add(toucharea);
+            float major = event.getTouchMajor();
+            float minor = event.getTouchMinor();
+            float[] axis = {major, minor};
+            axes.add(axis);
 
         }
         else if (event.getAction() == MotionEvent.ACTION_UP && touched) {
@@ -161,7 +162,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
     private void recordSwipe(ArrayList<float[]> lines) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
-        Boolean swipeInsert = db.insert_swipe(lines, pressures, velocities, touchareas, promptLetter, true);
+        Boolean swipeInsert = db.insert_swipe(lines, pressures, velocities, axes, promptLetter, true);
     }
 
     private void showToast(String message) {

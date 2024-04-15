@@ -224,7 +224,7 @@ public class ViewData extends Activity {
                     fileCount++;
                     writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", false);
                 }
-                else if (parts[9].equals(filerows[i-1].split(",")[9])) {
+                else if (parts[10].equals(filerows[i-1].split(",")[10])) {
                     writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", true);
                 }
                 else {
@@ -246,7 +246,7 @@ public class ViewData extends Activity {
                 float sum_vel_x = 0, sum_vel_y = 0;
                 float sum_acc_x = 0, sum_acc_y = 0;
                 float sum_pressure = 0;
-                float sum_area = 0;
+                float sum_major = 0, sum_minor = 0;
                 float dev_20_x = 0, dev_20_y = 0;
                 float dev_50_x = 0, dev_50_y = 0;
                 float dev_80_x = 0, dev_80_y = 0;
@@ -268,21 +268,23 @@ public class ViewData extends Activity {
                         coord_y.add(0, Float.parseFloat(parts[2]));
                     }
                     else {
-                        LocalDateTime ts = getDateTime(parts[11]);
-                        LocalDateTime prev_ts = getDateTime(prev[11]);
+                        LocalDateTime ts = getDateTime(parts[12]);
+                        LocalDateTime prev_ts = getDateTime(prev[12]);
                         sum_acc_x += Math.abs(vel_x - Float.parseFloat(prev[5])); // (diffInSecs(prev_ts, ts) * 100);
                         sum_acc_y += Math.abs(vel_y - Float.parseFloat(prev[6])); // (diffInSecs(prev_ts, ts) * 100);
                         coord_x.add(0, Float.parseFloat(parts[3]));
                         coord_y.add(0, Float.parseFloat(parts[4]));
                     }
                     float pressure = Float.parseFloat(parts[7]);
-                    float toucharea = Float.parseFloat(parts[8]);
-                    letter = parts[9];
+                    float major = Float.parseFloat(parts[8]);
+                    float minor = Float.parseFloat(parts[9]);
+                    letter = parts[10];
 
                     sum_vel_x += Math.abs(vel_x);
                     sum_vel_y += Math.abs(vel_y);
                     sum_pressure += pressure;
-                    sum_area += toucharea;
+                    sum_major += major;
+                    sum_minor += minor;
 
                     rowCount++;
                     prev = parts;
@@ -305,7 +307,8 @@ public class ViewData extends Activity {
                 float avg_acc_x = sum_acc_x / rowCount;
                 float avg_acc_y = sum_acc_y / rowCount;
                 float avg_pressure = sum_pressure / rowCount;
-                float avg_area = sum_area / rowCount;
+                float avg_major = sum_major / rowCount;
+                float avg_minor = sum_minor / rowCount;
                 float avg_dev_20_x = dev_20_x / rowCount, avg_dev_20_y = dev_20_y / rowCount;
                 float avg_dev_50_x = dev_50_x / rowCount, avg_dev_50_y = dev_50_y / rowCount;
                 float avg_dev_80_x = dev_80_x / rowCount, avg_dev_80_y = dev_80_y / rowCount;
@@ -314,7 +317,7 @@ public class ViewData extends Activity {
                 String calculatedValues = letter + "," +
                         avg_vel_x + "," + avg_vel_y + "," +
                         avg_acc_x + "," + avg_acc_y + "," +
-                        avg_pressure + "," + avg_area + "," +
+                        avg_pressure + "," + avg_major + "," + avg_minor + "," +
                         avg_dev_20_x + "," + avg_dev_20_y + "," +
                         avg_dev_50_x + "," + avg_dev_50_y + "," +
                         avg_dev_80_x + "," + avg_dev_80_y + "\n";
