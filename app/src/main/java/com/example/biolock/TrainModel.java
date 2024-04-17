@@ -221,9 +221,9 @@ public class TrainModel extends Activity {
         param.svm_type = svm_parameter.ONE_CLASS;
         param.kernel_type = svm_parameter.RBF;
         //param.C = 1.56; // Penalty parameter C of the error term
-        param.gamma = 0.00000001;
+        param.gamma = 0.0000001;
         //param.nr_weight = 0;
-        param.nu = 0.005;
+        param.nu = 0.01;
         //param.degree = 3;
         //param.coef0 = 4.0;
         System.out.println("Gamma = " + String.valueOf(param.gamma));

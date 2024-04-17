@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -37,6 +38,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
     private ArrayList magvals;
     private ArrayList<float[]> lines;
     private ArrayList<float[]> swipepath;
+    private ArrayList<Long> swipetimes;
     private String promptLetter;
     private VelocityTracker velocityTracker;
     private ArrayList<Float> pressures;
@@ -65,6 +67,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
         magvals.add(0.0);
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
+        swipetimes = new ArrayList<Long>();
         pressures = new ArrayList<>();
         velocities = new ArrayList<>();
         axes = new ArrayList<float[]>();
@@ -174,6 +177,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
             System.out.println(xTouchStart + " " + yTouchStart);
             float[] point = {xTouchStart, yTouchStart};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
             velocities.clear();
             if (velocityTracker == null) {
                 velocityTracker = VelocityTracker.obtain();
@@ -189,6 +193,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
         else if (event.getAction() == MotionEvent.ACTION_MOVE && touched) {
             float[] point = {event.getX(), event.getY()};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
             velocityTracker.addMovement(event);
             velocityTracker.computeCurrentVelocity(1000); // Compute velocity in pixels per second
             float pressureMove = event.getPressure();
@@ -208,6 +213,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
             yTouchEnd = event.getY();
             float[] point = {xTouchEnd, yTouchEnd};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
 
             for (int i = 0; i < swipepath.size()-1; i++) {
                 float[] curr = swipepath.get(i);
@@ -220,9 +226,9 @@ public class TestActivity extends Activity implements SensorEventListener, View.
         return true;
     }
 
-    private void recordSwipe(ArrayList<float[]> lines) {
+    private void recordSwipe(ArrayList<float[]> lines, ArrayList<Long> swipetimes) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
-        Boolean swipeInsert = db.insert_swipe(lines, pressures, velocities, axes, promptLetter, false);
+        Boolean swipeInsert = db.insert_swipe(lines, swipetimes, pressures, velocities, axes, promptLetter, false);
     }
 
     private void showToast(String message) {
@@ -255,7 +261,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
 
     public void nextPrompt(View view) {
         if (lines.size() > 0) {
-            recordSwipe(lines);
+            recordSwipe(lines, swipetimes);
             lines.clear();
             swipepath.clear();
         }
@@ -270,7 +276,7 @@ public class TestActivity extends Activity implements SensorEventListener, View.
         touched = false;
 
         if (lines.size() > 0) {
-            recordSwipe(lines);
+            recordSwipe(lines, swipetimes);
             lines.clear();
             swipepath.clear();
         }

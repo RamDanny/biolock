@@ -6,7 +6,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Random;
@@ -36,15 +39,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insert_acc(String accx, String accy, String accz, boolean train_mode) {
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String dt = dateTime.format(formatter);
-        //Random rand = new Random();
-        //int rand_int = rand.nextInt(1000000000);
+        Long timenow = Instant.now().toEpochMilli();
+        String dt = String.valueOf(timenow);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        //cv.put("id", rand_int);
         cv.put("acc_x", accx);
         cv.put("acc_y", accy);
         cv.put("acc_z", accz);
@@ -62,15 +61,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insert_gyro(String gyrox, String gyroy, String gyroz, boolean train_mode) {
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String dt = dateTime.format(formatter);
-        //Random rand = new Random();
-        //int rand_int = rand.nextInt(1000000000);
+        Long timenow = Instant.now().toEpochMilli();
+        System.out.println("Time="+timenow);
+        String dt = String.valueOf(timenow);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        //cv.put("id", rand_int);
         cv.put("gyro_x", gyrox);
         cv.put("gyro_y", gyroy);
         cv.put("gyro_z", gyroz);
@@ -88,15 +84,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public boolean insert_mag(String magx, String magy, String magz, boolean train_mode) {
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String dt = dateTime.format(formatter);
-        //Random rand = new Random();
-        //int rand_int = rand.nextInt(1000000000);
+        Long timenow = Instant.now().toEpochMilli();
+        String dt = String.valueOf(timenow);
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        //cv.put("id", rand_int);
         cv.put("mag_x", magx);
         cv.put("mag_y", magy);
         cv.put("mag_z", magz);
@@ -113,7 +105,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<float[]> axes, String letter, boolean train_mode) {
+    public boolean insert_swipe(ArrayList<float[]> lines, ArrayList<Long> swipetimes, ArrayList<Float> pressures, ArrayList<float[]> velocities, ArrayList<float[]> axes, String letter, boolean train_mode) {
         // get gesture id
         String countQuery = "SELECT COALESCE(MAX(gset), 0) FROM swipedata WHERE letter = '" + letter + "'";
         SQLiteDatabase db = null;
@@ -132,16 +124,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
             gset++;
             // insert to swipedata
             ContentValues cv = new ContentValues();
-            LocalDateTime dateTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String dt = dateTime.format(formatter);
-            //Random rand = new Random();
+            //Long timenow = Instant.now().toEpochMilli();
+            //String dt = String.valueOf(timenow);
+            String dt = "";
             for (int i = 0; i < lines.size(); i++) {
                 float[] coords = lines.get(i);
+                dt = String.valueOf(swipetimes.get(i));
                 float pressure = pressures.get(i);
                 float[] velocity = velocities.get(i);
                 float[] axis = axes.get(i);
-                //cv.put("id", rand.nextInt(1000000000));
                 cv.put("start_x", String.valueOf(coords[0]));
                 cv.put("start_y", String.valueOf(coords[1]));
                 cv.put("end_x", String.valueOf(coords[2]));

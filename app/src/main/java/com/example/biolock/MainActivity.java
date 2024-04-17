@@ -15,8 +15,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void trainButtonAgm(View view) {
-        Intent i = new Intent(MainActivity.this, TrainActivityAgm.class);
-        startActivity(i);
+        /*Intent i = new Intent(MainActivity.this, TrainActivityAgm.class);
+        startActivity(i);*/
     }
 
     public void trainButtonSwipe (View view) {
@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
     public void testbuttonagm(View view) {
-        Intent i = new Intent(MainActivity.this, TestActivityAgm.class);
-        startActivity(i);
+        /*Intent i = new Intent(MainActivity.this, TestActivityAgm.class);
+        startActivity(i);*/
     }
 
     public void testbuttonswipe (View view) {

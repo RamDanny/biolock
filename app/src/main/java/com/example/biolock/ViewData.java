@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -256,6 +257,7 @@ public class ViewData extends Activity {
                 String data_i = readFileInternal(getApplicationContext(), fileName);
                 String[] lines = data_i.split("\n");
                 String[] prev = {};
+                String start_ts = "";
                 for (int j = 0; j < lines.length; j++) {
                     String nextLine = lines[j];
                     String[] parts = nextLine.split(",");
@@ -264,16 +266,13 @@ public class ViewData extends Activity {
                     float vel_x = Float.parseFloat(parts[5]);
                     float vel_y = Float.parseFloat(parts[6]);
                     if (j == 0) {
-                        coord_x.add(0, Float.parseFloat(parts[1]));
-                        coord_y.add(0, Float.parseFloat(parts[2]));
+                        start_ts = parts[12];
                     }
                     else {
-                        LocalDateTime ts = getDateTime(parts[12]);
-                        LocalDateTime prev_ts = getDateTime(prev[12]);
+                        Long ts = getDateTime(parts[12]);
+                        Long prev_ts = getDateTime(prev[12]);
                         sum_acc_x += Math.abs(vel_x - Float.parseFloat(prev[5])); // (diffInSecs(prev_ts, ts) * 100);
                         sum_acc_y += Math.abs(vel_y - Float.parseFloat(prev[6])); // (diffInSecs(prev_ts, ts) * 100);
-                        coord_x.add(0, Float.parseFloat(parts[3]));
-                        coord_y.add(0, Float.parseFloat(parts[4]));
                     }
                     float pressure = Float.parseFloat(parts[7]);
                     float major = Float.parseFloat(parts[8]);
@@ -302,6 +301,12 @@ public class ViewData extends Activity {
                     dev_80_y += Math.abs(coord_y.get(k) - coord_y.get(eighty));
                 }
 
+                long dur_ges = diffInMillis(getDateTime(start_ts), getDateTime(prev[12]));
+                float start_x = coord_x.get(0);
+                float start_y = coord_y.get(0);
+                float end_x = coord_x.get(coord_x.size()-1);
+                float end_y = coord_y.get(coord_y.size()-1);
+                double direct_endtoend_dist = Math.sqrt((end_x - start_x)*(end_x - start_x) + (end_y - start_y)*(end_y - start_y));
                 float avg_vel_x = sum_vel_x / rowCount;
                 float avg_vel_y = sum_vel_y / rowCount;
                 float avg_acc_x = sum_acc_x / rowCount;
@@ -314,7 +319,10 @@ public class ViewData extends Activity {
                 float avg_dev_80_x = dev_80_x / rowCount, avg_dev_80_y = dev_80_y / rowCount;
 
                 // Append calculated values to a single CSV file
-                String calculatedValues = letter + "," +
+                String calculatedValues = letter + "," + dur_ges + "," +
+                        start_x + "," + start_y + "," +
+                        end_x + "," + end_y + "," +
+                        direct_endtoend_dist + "," +
                         avg_vel_x + "," + avg_vel_y + "," +
                         avg_acc_x + "," + avg_acc_y + "," +
                         avg_pressure + "," + avg_major + "," + avg_minor + "," +
@@ -360,7 +368,7 @@ public class ViewData extends Activity {
                     fileCount++;
                     writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", false);
                 }
-                else if (diffInSecs(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 3) {
+                else if (diffInMillis(getDateTime(parts[4]), getDateTime(filerows[i-1].split(",")[4])) < 3000) {
                     writeFileInternal(getApplicationContext(), sensor+"("+fileCount+").csv", filerows[i]+"\n", true);
                 }
                 else {
@@ -546,21 +554,12 @@ public class ViewData extends Activity {
         return stringBuilder.toString();
     }
 
-    public LocalDateTime getDateTime(String str) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        try {
-            LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
-            return dateTime;
-        }
-        catch (Exception e) {
-            System.err.println("Error parsing the string: " + e.getMessage());
-        }
-        return null;
+    public Long getDateTime(String str) {
+        return Long.parseLong(str);
     }
 
-    public long diffInSecs(LocalDateTime dt1, LocalDateTime dt2) {
-        Duration duration = Duration.between(dt1, dt2);
-        return Math.abs(duration.getSeconds());
+    public long diffInMillis(Long dt1, Long dt2) {
+        return Math.abs(dt2 - dt1);
     }
 
     public void copyToDownloads(Context context, String filePath) {

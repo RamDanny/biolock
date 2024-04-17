@@ -1,7 +1,12 @@
 package com.example.biolock;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -9,22 +14,33 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class TestActivitySwipe extends Activity implements View.OnTouchListener {
+public class TestActivitySwipe extends Activity implements SensorEventListener, View.OnTouchListener {
 
 
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor gyroscope;
+    private Sensor magnetometer;
     private TextView userPrompt;
-
+    public static boolean accmeter = false;
+    public static boolean gyrmeter = false;
+    public static boolean magmeter = false;
     public static boolean touched = false;
     private float xTouchStart;
     private float yTouchStart;
     private float xTouchEnd;
     private float yTouchEnd;
+    private ArrayList accvals;
+    private ArrayList gyrovals;
+    private ArrayList magvals;
 
     private ArrayList<float[]> lines;
     private ArrayList<float[]> swipepath;
+    private ArrayList<Long> swipetimes;
     private String promptLetter;
     private VelocityTracker velocityTracker;
     private ArrayList<Float> pressures;
@@ -61,14 +77,33 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
 
         randPrompt();
 
+        accvals = new ArrayList(3);
+        accvals.add(0.0);
+        accvals.add(0.0);
+        accvals.add(0.0);
+        gyrovals = new ArrayList(3);
+        gyrovals.add(0.0);
+        gyrovals.add(0.0);
+        gyrovals.add(0.0);
+        magvals = new ArrayList(3);
+        magvals.add(0.0);
+        magvals.add(0.0);
+        magvals.add(0.0);
+
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
+        swipetimes = new ArrayList<Long>();
         pressures = new ArrayList<>();
         velocities = new ArrayList<>();
         axes = new ArrayList<float[]>();
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
-
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
         findViewById(android.R.id.content).setOnTouchListener(this);
 
 
@@ -78,17 +113,73 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
     protected void onResume() {
         super.onResume();
         // Register the sensor listeners when the activity is resumed
+        if (accelerometer != null) {
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
+        if (gyroscope != null) {
+            sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        if (magnetometer != null) {
+            sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Unregister the sensor listeners when the activity is paused
-
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        // Update when sensors detect change
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && accmeter) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
 
+            accvals.set(0, x);
+            accvals.set(1, y);
+            accvals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)), false);
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            gyrovals.set(0, x);
+            gyrovals.set(1, y);
+            gyrovals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)), false);
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && magmeter) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            magvals.set(0, x);
+            magvals.set(1, y);
+            magvals.set(2, z);
+
+            DatabaseManager db = new DatabaseManager(getApplicationContext());
+            Boolean magInsert = db.insert_mag(String.valueOf(magvals.get(0)), String.valueOf(magvals.get(1)), String.valueOf(magvals.get(2)), false);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 
 
     @Override
@@ -100,6 +191,7 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
             System.out.println(xTouchStart + " " + yTouchStart);
             float[] point = {xTouchStart, yTouchStart};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
             velocities.clear();
             if (velocityTracker == null) {
                 velocityTracker = VelocityTracker.obtain();
@@ -115,6 +207,7 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
         else if (event.getAction() == MotionEvent.ACTION_MOVE && touched) {
             float[] point = {event.getX(), event.getY()};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
             velocityTracker.addMovement(event);
             velocityTracker.computeCurrentVelocity(1000); // Compute velocity in pixels per second
             float pressureMove = event.getPressure();
@@ -134,6 +227,7 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
             yTouchEnd = event.getY();
             float[] point = {xTouchEnd, yTouchEnd};
             swipepath.add(point);
+            swipetimes.add(Instant.now().toEpochMilli());
 
             for (int i = 0; i < swipepath.size()-1; i++) {
                 float[] curr = swipepath.get(i);
@@ -146,9 +240,9 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
         return true;
     }
 
-    private void recordSwipe(ArrayList<float[]> lines) {
+    private void recordSwipe(ArrayList<float[]> lines, ArrayList<Long> swipetimes) {
         DatabaseManager db = new DatabaseManager(getApplicationContext());
-        Boolean swipeInsert = db.insert_swipe(lines, pressures, velocities, axes, promptLetter, false);
+        Boolean swipeInsert = db.insert_swipe(lines, swipetimes, pressures, velocities, axes, promptLetter, false);
     }
 
     private void showToast(String message) {
@@ -157,7 +251,9 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
 
     public void startLogging(View view) {
         // Called when the "Start Logging" button is pressed
-
+        accmeter = true;
+        gyrmeter = true;
+        magmeter = true;
         touched = true;
 
         System.out.println("Logging started!");
@@ -179,22 +275,26 @@ public class TestActivitySwipe extends Activity implements View.OnTouchListener 
 
     public void nextPrompt(View view) {
         if (lines.size() > 0) {
-            recordSwipe(lines);
+            recordSwipe(lines, swipetimes);
             lines.clear();
             swipepath.clear();
+            swipetimes.clear();
         }
         randPrompt();
     }
 
     public void stopLogging(View view) {
         // Called when the "Stop Logging" button is pressed
-
+        accmeter = false;
+        gyrmeter = false;
+        magmeter = false;
         touched = false;
 
         if (lines.size() > 0) {
-            recordSwipe(lines);
+            recordSwipe(lines, swipetimes);
             lines.clear();
             swipepath.clear();
+            swipetimes.clear();
         }
 
         System.out.println("Logging stopped!");
