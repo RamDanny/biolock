@@ -8,7 +8,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,14 +32,12 @@ public class TestActivityAgm extends Activity implements SensorEventListener {
     private ArrayList gyrovals;
     private ArrayList magvals;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_agm);
 
         userPrompt = findViewById(R.id.userPromptTest);
-
 
         accvals = new ArrayList(3);
         accvals.add(0.0);
@@ -162,8 +163,9 @@ public class TestActivityAgm extends Activity implements SensorEventListener {
         System.out.println("Logging started!");
     }
 
+    public void nextPrompt(View view) {
 
-
+    }
 
     public void stopLogging(View view) {
         // Called when the "Stop Logging" button is pressed
@@ -182,7 +184,7 @@ public class TestActivityAgm extends Activity implements SensorEventListener {
     }
 
     public void testButton(View view) {
-        Intent i = new Intent(TestActivityAgm.this, TestModel.class);
-        startActivity(i);
+        //Intent i = new Intent(TestActivityAgm.this, TestModel.class);
+        //startActivity(i);
     }
 }

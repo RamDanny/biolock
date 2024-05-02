@@ -21,22 +21,12 @@ import java.util.Random;
 public class TrainActivitySwipe extends Activity implements SensorEventListener, View.OnTouchListener {
 
     private SensorManager sensorManager;
-    private Sensor accelerometer;
-    private Sensor gyroscope;
-    private Sensor magnetometer;
     private TextView userPrompt;
-    public static boolean accmeter = false;
-    public static boolean gyrmeter = false;
-    public static boolean magmeter = false;
-
     public static boolean touched = false;
     private float xTouchStart;
     private float yTouchStart;
     private float xTouchEnd;
     private float yTouchEnd;
-    private ArrayList accvals;
-    private ArrayList gyrovals;
-    private ArrayList magvals;
     private ArrayList<float[]> lines;
     private ArrayList<float[]> swipepath;
     private ArrayList<Long> swipetimes;
@@ -76,20 +66,6 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
         }
 
         randPrompt();
-
-        accvals = new ArrayList(3);
-        accvals.add(0.0);
-        accvals.add(0.0);
-        accvals.add(0.0);
-        gyrovals = new ArrayList(3);
-        gyrovals.add(0.0);
-        gyrovals.add(0.0);
-        gyrovals.add(0.0);
-        magvals = new ArrayList(3);
-        magvals.add(0.0);
-        magvals.add(0.0);
-        magvals.add(0.0);
-
         swipepath = new ArrayList<float[]>();
         lines = new ArrayList<float[]>();
         swipetimes = new ArrayList<Long>();
@@ -99,11 +75,6 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
         // Initialize sensor manager, accelerometer, and gyroscope sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager != null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        }
 
         findViewById(android.R.id.content).setOnTouchListener(this);
 
@@ -112,18 +83,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
     @Override
     protected void onResume() {
         super.onResume();
-        // Register the sensor listeners when the activity is resumed
-        if (accelerometer != null) {
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        }
 
-        if (gyroscope != null) {
-            sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        if (magnetometer != null) {
-            sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
-        }
     }
 
     @Override
@@ -138,42 +98,7 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
     @Override
     public void onSensorChanged(SensorEvent event) {
         // Update when sensors detect change
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && accmeter) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
 
-            accvals.set(0, x);
-            accvals.set(1, y);
-            accvals.set(2, z);
-
-            DatabaseManager db = new DatabaseManager(getApplicationContext());
-            Boolean accInsert = db.insert_acc(String.valueOf(accvals.get(0)), String.valueOf(accvals.get(1)), String.valueOf(accvals.get(2)), true);
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyrmeter) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-
-            gyrovals.set(0, x);
-            gyrovals.set(1, y);
-            gyrovals.set(2, z);
-
-            DatabaseManager db = new DatabaseManager(getApplicationContext());
-            Boolean gyroInsert = db.insert_gyro(String.valueOf(gyrovals.get(0)), String.valueOf(gyrovals.get(1)), String.valueOf(gyrovals.get(2)), true);
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && magmeter) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-
-            magvals.set(0, x);
-            magvals.set(1, y);
-            magvals.set(2, z);
-
-            DatabaseManager db = new DatabaseManager(getApplicationContext());
-            Boolean magInsert = db.insert_mag(String.valueOf(magvals.get(0)), String.valueOf(magvals.get(1)), String.valueOf(magvals.get(2)), true);
-        }
     }
 
     @Override
@@ -250,9 +175,6 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
     public void startLogging(View view) {
         // Called when the "Start Logging" button is pressed
-        accmeter = true;
-        gyrmeter = true;
-        magmeter = true;
         touched = true;
 
         System.out.println("Logging started!");
@@ -284,9 +206,6 @@ public class TrainActivitySwipe extends Activity implements SensorEventListener,
 
     public void stopLogging(View view) {
         // Called when the "Stop Logging" button is pressed
-        accmeter = false;
-        gyrmeter = false;
-        magmeter = false;
         touched = false;
 
         if (lines.size() > 0) {

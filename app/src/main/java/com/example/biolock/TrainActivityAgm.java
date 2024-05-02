@@ -154,6 +154,9 @@ public class TrainActivityAgm extends Activity implements SensorEventListener{
         System.out.println("Logging started!");
     }
 
+    public void nextPrompt(View view) {
+
+    }
 
     public void stopLogging(View view) {
         // Called when the "Stop Logging" button is pressed
